@@ -1,0 +1,23 @@
+{
+  "name": "n-qr",
+  "version": "1.0.0",
+  "description": "\"# mqr\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nttlong/mqr.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nttlong/mqr/issues"
+  },
+  "homepage": "https://github.com/nttlong/mqr#readme",
+  "dependencies": {
+    "deasync": "^0.1.13",
+    "mongoose": "^5.3.7"
+  }
+}
