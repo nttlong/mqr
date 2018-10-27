@@ -1,3 +1,4 @@
+var errors_parse =require("./errors_parse");
 function entity(qr, _expr) {
     this._owner = qr;
     
@@ -106,33 +107,33 @@ entity.prototype.commit = function () {
                 if (r && r.insertedId){
                     me._insertItem._id=r.insertedId;
                 }
-                var ret = me._owner.getError(db, e, me._insertItem);
-                if(ret.error){
-                    cb(ret.error);
+                var ret = errors_parse.getError(db,me.name, e, me._insertItem);
+                if(ret){
+                    cb(ret);
                 }
                 else {
-                    cb(null, ret.data);
+                    cb(null, me._insertItem);
                 }
                 
             });
         }
         if (me._insertItems != null) {
             return me.coll.insertMany(me._insertItems,function(e,r){
-                var ret = me._owner.getError(db, e, me._insertItems);
-                if (ret.error) {
-                    cb(ret.error);
+                var ret = errors_parse.getError(db,me._owner.name, e, me._insertItems);
+                if(ret!=null){
+                    cb(ret);
                 }
                 else {
-                    cb(null, ret.data);
+                    cb(null, data);
                 }
             });
         }
         if (me._updateData) {
             if (me._expr) {
                 return me.coll.updateMany(me._expr, me._updateData,function(e,r){
-                    var ret = me._owner.getError(db, e, me._updateData);
-                    if (ret.error) {
-                        cb(ret.error);
+                    var ret = errors_parse.getError(db,me.name, e, me._updateData);
+                    if (ret) {
+                        cb(ret);
                     }
                     else {
                         cb(null, ret.data);
@@ -141,12 +142,12 @@ entity.prototype.commit = function () {
             }
             else {
                 return me.coll.updateMany({}, me._updateData,function(e,r){
-                    var ret = me._owner.getError(db, e, me._updateData);
-                    if (ret.error) {
-                        cb(ret.error);
+                    var ret = errors_parse.getError(db,me.name, e, me._updateData);
+                    if (ret) {
+                        cb(ret);
                     }
                     else {
-                        cb(null, ret.data);
+                        cb(null, me._updateData);
                     }
                 });
             }

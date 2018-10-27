@@ -4,8 +4,6 @@ var validator=require("./validators");
 var jsep=require("./jsep");
 var sync=require("./sync");
 var mg=require("mongoose");
-var __index={};
-var __info={};
 
 function qr() {
     if(arguments.length==1){
@@ -112,7 +110,7 @@ qr.prototype.items = function (db,options) {
         }
     }
     var me = this;
-    me.limit(1);
+  
     function run(cb) {
         me.db.collection(me.name).aggregate(me.pipeline, function (e, r) {
             if (e) {
@@ -502,23 +500,7 @@ qr.prototype.lookup = function () {
 
 };
 
-qr.prototype.join = function (from, localField, foreignField, as) {
-    this.lookup(from, localField, foreignField, as);
-    this.unwind(as);
-    return this;
-};
-qr.prototype.leftJoin = function (from, localField, foreignField, as) {
-    this.lookup(from, localField, foreignField, as);
-    this.unwind(as, true);
-    return this;
-};
-qr.prototype.rightJoin = function (from, localField, foreignField, as) {
-    var ret = from;
-    ret = new qr(from);
-    ret.lookup(this.name, foreignField, localField, as);
-    ret.unwind(as, true);
-    return ret;
-};
+
 qr.prototype.group = function () {
     var selectors = arguments[0];
     var params = [];
@@ -680,166 +662,8 @@ qr.prototype.where = function () {
     var _expr = js_parse(jsep(selectors, params), params);
     return new entity(this, _expr);
 };
-qr.prototype.getInfo=function(db){
-    var me=this;
-    function run(cb){
-        db.db.eval("db.getCollectionInfos({name:'" + me.name+"'})",function(e,r){
-            if(e){
-                cb(e);
-            }
-            else {
-                if(r.length>0){
-                    if (r[0] && 
-                        r[0].options&&
-                        r[0].options.validator &&
-                        r[0].options.validator.$jsonSchema)
-                        cb(null, r[0].options.validator.$jsonSchema);
-                }
-                else {
-                    cb(e, null);
-                }
-            }
-                
-        });
-    };
-    return sync.sync(run,[]);
-}
-qr.prototype.getError=function(db,e,data){
-    var i=0;
-    var chkFields=[];
-    var me = this;
-    function run(cb) {
-        db.collection(me.name).getIndexes(function (e, r) {
-            cb(e,r);
-        });
-    }
-    if(!e){
-        return {
-            data:{
-                error:null,
-                data: data
-            }
-        };
-    }
-    if(e.code==11000){
-        var error={
-            message: e.message.split(':')[0],
-            index: e.message.split(':')[2].split(' ')[1],
-            errorCode: e.code,
-            code:"DUPL"
-
-        };
-        if (!__index[this.name]){
-            __index[this.name]={};
-            if (!__index[this.name][error.index]){
-                var ret = sync.sync(run, []);
-                __index[this.name][error.index] = [];
-                for (i = 0; i < ret[error.index].length;i++){
-                    __index[this.name][error.index].push(ret[error.index][i][0]);
-                }
-                
-            }
-        }
-        error.fields = __index[this.name][error.index];
-        return {
-            error:null,
-            data:{
-                error:error,
-                data: data
-            }
-        };
-
-    }
-    if(e.code===121){
-        if(!__info[this.name]){
-            __info[this.name] = this.getInfo(db);
-        }
-        if (!(data instanceof Array)){
-            chkFields=validator.checkIsMissData(__info[this.name].required,data);
-            if (chkFields.length>0){
-                return {
-                    error:null,
-                    data:{
-                        error:{
-                            errorCode: e.code,
-                            code:"MISS",
-                            message:e.messages,
-                            fields:chkFields
-                        },
-                        data:data
-                    }
-                };
-            }
-            else {
-                return {
-                    error: nulll,
-                    data: {
-                        data: data,
-                        error:{
-                            code:"INVD",
-                            schema: __info[this.name].properties
-
-                        }
-                    }
-                };
-            }
-        }
-        else {
-            var errorList=[];
-            for(i=0;i<data.length;i++){
-                chkFields = validator.checkIsMissData(__info[this.name].required, data);
-                if(chkFields.length>0){
-                    errorList.push({
-                        index:i,
-                        fields:chkFields,
-                        code:"MISS"
-                    });
-                }
-                
-            }
-            if (errorList.length>0){
-                return {
-                    error: null,
-                    data: {
-                        error: {
-                            errorCode: e.code,
-                            code: "MISS",
-                            message: e.messages,
-                            errors: errorList
-                        },
-                        data: data
-                    }
-                };
-            }
-            else {
-                return {
-                    error: nulll,
-                    data: {
-                        data: data,
-                        error: {
-                            code: "INVD",
-                            schema: __info[this.name].properties
-
-                        }
-                    }
-                };
-            }
-        }
 
 
-        var info = __info[this.name];
-        if(info)
-        var x=info;
-    }
-    else {
-        return {
-            data: {
-                error: e,
-                data: data
-            }
-        };
-    }
-}
 qr.prototype.pull = function () {
     var selectors = arguments[0];
     var params = [];

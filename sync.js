@@ -54,7 +54,7 @@ function sync(fn, args, cb) {
         }
     }
 };
-var _callers = {}
+var _callers = {};
 /**
  * 
  * @param {Function} fn 
