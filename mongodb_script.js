@@ -1176,11 +1176,12 @@ db.system.js.save({
         if(fx.callee.name==="filter"){
            //{ $filter: { input: <array>, as: <string>, cond: <expression> } }
            var paramIndexs=['input','as','cond'];
+           var prefix=["$",undefined,"$"];
            var ret= {
              	$filter:{}
            }
            for(var i=0;i<fx.arguments.length;i++){
-          	   ret.$filter[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+          	   ret.$filter[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,prefix[i]);
           	}
           	return ret;
         }
@@ -1282,10 +1283,10 @@ db.system.js.save({
             if(typeof obj ==="string"){
                 
               if(forMatch){
-                    return js_parse(jsep(obj,params),params,forMatch,false,"$");    
+                    return js_parse(jsep(obj,params),params,!forMatch,false,"$");    
               }
               else {
-                  return js_parse(jsep(obj,params),params,forMatch,false,"$");    
+                  return js_parse(jsep(obj,params),params,!forMatch,false,"$");    
               }
               
             }
@@ -1317,6 +1318,7 @@ db.system.js.save({
             }
             return this;
         }
+       
         qr.prototype.project=function(){
             var selectors=arguments[0];
             
