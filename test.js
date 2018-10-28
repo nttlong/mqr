@@ -9,12 +9,11 @@ var qr=require("./index");
 // var m=require("mongoose");
 var cnn=mg.createConnection("mongodb://root:123456@localhost:27017/hrm");
 try {
-    var r = qr(cnn, "hrm.mmx").insert({
-        code: "1234"
-    }, {
-            code: "X0009",
-            name: "dsada dsad sadsad "
-        }, {}).commit();
+    var r = qr(cnn, "hrm.mmx").set({
+        code: "123485xq",
+        name:"12345"
+    }).commit();
+        var x=r;
 } catch (error) {
     throw error;
 }

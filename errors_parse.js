@@ -35,21 +35,27 @@ function getError(db, collectionName, e, data) {
     var i = 0;
     var chkFields = [];
    
-    function run(cb) {
-        if (__index[collectionName]){
-            cb(null, __index[collectionName]);
+    function run(index,cb) {
+        if (__index[collectionName] && __index[collectionName][index]){
+            cb(null, __index[collectionName][index]);
             return;
+        }
+        if (!__index[collectionName]){
+            __index[collectionName]={};
+        }
+        if (!__index[collectionName][index]) {
+            __index[collectionName][index]= [];
         }
         db.collection(collectionName).getIndexes(function (e, r) {
             if(e){
                 cb(e);
             }
             else {
-                __index[collectionName] = [];
-                for (i = 0; i < ret[error.index].length; i++) {
-                    __index[this.name][error.index].push(ret[error.index][i][0]);
+                
+                for (i = 0; i < r[index].length; i++) {
+                    __index[collectionName][index].push(r[index][i][0]);
                 }
-                cb(null, __index[collectionName]);
+                cb(null, __index[collectionName][index]);
             }
             
         });
@@ -62,8 +68,8 @@ function getError(db, collectionName, e, data) {
         index = e.message.split(':')[2].split(' ')[1];
         errorCode= e.code;
         code= "DUPL";
-        fields = sync.sync(run, []);
-        return error(err.message, e.code, "DUPL", fields,null,null);
+        fields = sync.sync(run, [index]);
+        return error(e.message, e.code, "DUPL", fields,null,null);
 
     }
     if (e.code === 121) {

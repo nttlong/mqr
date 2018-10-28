@@ -104,50 +104,82 @@ entity.prototype.commit = function () {
     function run(cb) {
         if (me._insertItem != null) {
             return me.coll.insertOne(me._insertItem,function(e,r){
-                if (r && r.insertedId){
-                    me._insertItem._id=r.insertedId;
+                if (r && r.insertedId) {
+                    me._insertItem._id = r.insertedId;
                 }
-                var ret = errors_parse.getError(db,me.name, e, me._insertItem);
+                if(!e){
+                    
+                    cb(null,{
+                        data:me._insertItem
+                    });
+                    return;
+                }
+                
+                var ret = errors_parse.getError(db,me._owner.name, e, me._insertItem);
                 if(ret){
-                    cb(ret);
+                    cb(null,{
+                        error:ret,
+                        data:me._insertItem
+                    });
                 }
                 else {
-                    cb(null, me._insertItem);
+                    cb(e);
                 }
                 
             });
         }
         if (me._insertItems != null) {
             return me.coll.insertMany(me._insertItems,function(e,r){
+                if(!e){
+                    for (var i = 0; i < r.insertedIds.length;i++){
+                        me._insertItems[i]._id = r.insertedIds[i];
+                    }
+                    cb(null,{data: me._insertItems});
+                    return;
+                }
                 var ret = errors_parse.getError(db,me._owner.name, e, me._insertItems);
                 if(ret!=null){
-                    cb(ret);
+                    cb(null,{
+                        error:ret,
+                        data:me._insertItems
+                    });
                 }
                 else {
-                    cb(null, data);
+                    cb(e);
                 }
             });
         }
         if (me._updateData) {
             if (me._expr) {
                 return me.coll.updateMany(me._expr, me._updateData,function(e,r){
-                    var ret = errors_parse.getError(db,me.name, e, me._updateData);
+                    if(!e){
+                        cb(null,{});
+                        return;
+                    }
+                    var ret = errors_parse.getError(db,me._owner.name, e, me._updateData);
                     if (ret) {
-                        cb(ret);
+                        cb(null,{
+                            error:ret
+                        });
+                        return;
                     }
                     else {
-                        cb(null, ret.data);
+                        cb(e);
                     }
                 });
             }
             else {
                 return me.coll.updateMany({}, me._updateData,function(e,r){
-                    var ret = errors_parse.getError(db,me.name, e, me._updateData);
+                    var ret = errors_parse.getError(db,me._owner.name, e, me._updateData);
                     if (ret) {
-                        cb(ret);
+                        cb(null,{
+                            error:ret
+                        });
+                        return;
                     }
                     else {
-                        cb(null, me._updateData);
+                        cb(e);
+                        return;
                     }
                 });
             }
@@ -230,7 +262,7 @@ entity.prototype.push = function (data) {
 };
 entity.prototype.delete = function () {
     if (!this._expr) {
-        throw (new Error("Can not delete data without where"))
+        throw (new Error("Can not delete data without where"));
     }
     return this.coll.deleteMany(this._expr);
 };
