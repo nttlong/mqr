@@ -51,7 +51,6 @@ function getError(db, collectionName, e, data) {
                 cb(e);
             }
             else {
-                
                 for (i = 0; i < r[index].length; i++) {
                     __index[collectionName][index].push(r[index][i][0]);
                 }

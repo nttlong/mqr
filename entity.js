@@ -1,4 +1,5 @@
 var errors_parse =require("./errors_parse");
+var models=require("./modelsUtils");
 function entity(qr, _expr) {
     this._owner = qr;
     
@@ -81,6 +82,7 @@ entity.prototype.count = function () {
 entity.prototype.commit = function () {
     var cb = null;
     var db=this._owner.db;
+    models.applyAllModels(db);
     if (arguments.length == 1) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
