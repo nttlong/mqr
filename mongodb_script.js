@@ -827,10 +827,22 @@ db.system.js.save({
     if(fx.type==='MemberExpression'){
         var left=js_parse(fx.object,params,forSelect);
         if(prefix){
-        	return prefix+left+"."+fx.property.name;
+          if(fx.property.name){
+            	return prefix+left+"."+fx.property.name;
+          }
+          else {
+            
+            return prefix+left+"."+fx.property.raw;
+          }
+        	
         }
         else {
-          return left+"."+fx.property.name
+          if(fx.property.name){
+             return left+"."+fx.property.name;
+          }
+          else {
+            return left+"."+fx.property.raw;
+          }
         }
     }
     
@@ -931,6 +943,14 @@ db.system.js.save({
             var left=js_parse(fx.arguments[0],params,true,forNot);
             var right=js_parse(fx.arguments[1],params,true,forNot);
             ret={}
+            var p={};
+           // ret=p;
+            var items=left.split('.');
+            for(var i=0;i<items.length-1;i++){
+              p[items[i]]={};
+              p=p[items[i]];
+            }
+           
             if(fx.arguments.length==2){
                 if(forNot){
                     ret[left]={
@@ -985,10 +1005,13 @@ db.system.js.save({
                 then:js_parse(fx.arguments[1],params,true,false,"$")
             }
         }
-        if(fx.callee.name=="in"){
+        if(fx.callee.name=="in" && (!forSelect)){
           	var ret={};
           	
           	var field=js_parse(fx.arguments[0],params,true,forNot,"$");
+          	if(typeof field!="string"){
+          	  throw(new Error("match or where with $in must be begin with field name, not object" ))
+          	}
           	ret[field]={};
           	ret[field]["$in"]=js_parse(fx.arguments[1],params,true,forNot,"$");
           	
@@ -1217,8 +1240,7 @@ db.system.js.save({
             return ret;
         }
     }
-	}
-	//--------------
+    }
 }) 
 db.system.js.save(
 	{
@@ -1358,7 +1380,7 @@ db.system.js.save({
 		    }
 		    
 		    this.pipeline.push({
-		        $match: expr(_expr,params)
+		        $match: js_parse(jsep(_expr,params),params,false)
 		    });
 		    return this;
 		 
@@ -2169,8 +2191,7 @@ db.system.js.save({
 	      	return this;
 	    }
         return new qr(name)
-	}
-	//-----------------------
+    }
     
    
 })
