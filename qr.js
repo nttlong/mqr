@@ -196,7 +196,7 @@ qr.prototype.match = function () {
     }
 
     this.pipeline.push({
-        $match: js_parse(jsep(_expr, params), params)
+        $match: js_parse(jsep(_expr, params), params, false)
     });
     return this;
 

@@ -35,12 +35,12 @@ function js_parse(fx, params, forSelect, forNot, prefix){
         }
         if (fx.operator === "!") {
             if (forSelect) {
-                 ret = { $not: [] };
+                var ret = { $not: [] };
                 ret.$not.push(js_parse(fx.argument, params, forSelect))
                 return ret;
             }
             else {
-                 ret = js_parse(fx.argument, params, forSelect, true);
+                var ret = js_parse(fx.argument, params, forSelect, true);
 
                 return ret;
             }
@@ -59,15 +59,27 @@ function js_parse(fx, params, forSelect, forNot, prefix){
     if (fx.type === 'MemberExpression') {
         var left = js_parse(fx.object, params, forSelect);
         if (prefix) {
-            return prefix + left + "." + fx.property.name;
+            if (fx.property.name) {
+                return prefix + left + "." + fx.property.name;
+            }
+            else {
+
+                return prefix + left + "." + fx.property.raw;
+            }
+
         }
         else {
-            return left + "." + fx.property.name
+            if (fx.property.name) {
+                return left + "." + fx.property.name;
+            }
+            else {
+                return left + "." + fx.property.raw;
+            }
         }
     }
 
     if (fx.type === 'BinaryExpression') {
-        ret = {};
+        ret = {}
         var right = js_parse(fx.right, params, true, false, prefix);
         var left = js_parse(fx.left, params, true, false, prefix);
 
@@ -82,14 +94,14 @@ function js_parse(fx, params, forSelect, forNot, prefix){
                             }
 
                         };
-                        return ret;
+                        return ret
                     }
                     else {
                         ret[left] = {
                             $regex: new RegExp("^" + right + "$", "i")
 
                         };
-                        return ret;
+                        return ret
                     }
                 }
                 if (!forSelect) {
@@ -163,6 +175,14 @@ function js_parse(fx, params, forSelect, forNot, prefix){
             var left = js_parse(fx.arguments[0], params, true, forNot);
             var right = js_parse(fx.arguments[1], params, true, forNot);
             ret = {}
+            var p = {};
+            // ret=p;
+            var items = left.split('.');
+            for (var i = 0; i < items.length - 1; i++) {
+                p[items[i]] = {};
+                p = p[items[i]];
+            }
+
             if (fx.arguments.length == 2) {
                 if (forNot) {
                     ret[left] = {
@@ -217,10 +237,13 @@ function js_parse(fx, params, forSelect, forNot, prefix){
                 then: js_parse(fx.arguments[1], params, true, false, "$")
             }
         }
-        if (fx.callee.name == "in") {
+        if (fx.callee.name == "in" && (!forSelect)) {
             var ret = {};
 
             var field = js_parse(fx.arguments[0], params, true, forNot, "$");
+            if (typeof field != "string") {
+                throw (new Error("match or where with $in must be begin with field name, not object"))
+            }
             ret[field] = {};
             ret[field]["$in"] = js_parse(fx.arguments[1], params, true, forNot, "$");
 
@@ -385,11 +408,12 @@ function js_parse(fx, params, forSelect, forNot, prefix){
         if (fx.callee.name === "filter") {
             //{ $filter: { input: <array>, as: <string>, cond: <expression> } }
             var paramIndexs = ['input', 'as', 'cond'];
+            var prefix = ["$", undefined, "$"];
             var ret = {
                 $filter: {}
             }
             for (var i = 0; i < fx.arguments.length; i++) {
-                ret.$filter[paramIndexs[i]] = js_parse(fx.arguments[i], params, true, forNot, "$");
+                ret.$filter[paramIndexs[i]] = js_parse(fx.arguments[i], params, true, forNot, prefix[i]);
             }
             return ret;
         }
