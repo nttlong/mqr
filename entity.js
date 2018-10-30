@@ -215,6 +215,36 @@ entity.prototype.insert = function () {
     }
 
 };
+entity.prototype.mul = function (data) {
+    if (!this._updateData) {
+        this._updateData = {};
+    }
+    if (!this._updateData.$mul) {
+        this._updateData.$mul = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            this._updateData.$mul[keys[i]] = data[keys[i]];
+        }
+    }
+    return this;
+};
+entity.prototype.inc = function (data) {
+    if (!this._updateData) {
+        this._updateData = {};
+    }
+    if (!this._updateData.$inc) {
+        this._updateData.$inc = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            this._updateData.$inc[keys[i]] = data[keys[i]];
+        }
+    }
+    return this;
+};
 entity.prototype.unset = function (data) {
     if (!this._updateData) {
         this._updateData = {};

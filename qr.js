@@ -637,6 +637,70 @@ qr.prototype.pop = function (data) {
     }
     return ret;
 };
+qr.prototype.mul = function (data) {
+    var ret = new entity(this);
+    if (!ret._updateData) {
+        ret._updateData = {};
+    }
+    if (!ret._updateData.$mul) {
+        ret._updateData.$mul = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            ret._updateData.$mul[keys[i]] = data[keys[i]];
+        }
+    }
+    return ret;
+};
+qr.prototype.inc = function (data) {
+    var ret = new entity(this);
+    if (!ret._updateData) {
+        ret._updateData = {};
+    }
+    if (!ret._updateData.$inc) {
+        ret._updateData.$inc = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            ret._updateData.$inc[keys[i]] = data[keys[i]];
+        }
+    }
+    return ret;
+};
+qr.prototype.rename = function (data) {
+    var ret = new entity(this);
+    if (!ret._updateData) {
+        ret._updateData = {};
+    }
+    if (!ret._updateData.$rename) {
+        ret._updateData.$rename = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            ret._updateData.$rename[keys[i]] = data[keys[i]];
+        }
+    }
+    return ret;
+};
+qr.prototype.unset = function (data) {
+    var ret = new entity(this);
+    if (!ret._updateData) {
+        ret._updateData = {};
+    }
+    if (!ret._updateData.$unset) {
+        ret._updateData.$unset = {};
+    }
+    var keys = Object.keys(data);
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] != "_id") {
+            ret._updateData.$unset[keys[i]] = data[keys[i]];
+        }
+    }
+    return ret;
+};
 qr.prototype.set = function (data) {
     var ret = new entity(this);
     if (!ret._updateData) {
