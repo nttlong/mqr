@@ -1267,9 +1267,10 @@ db.system.js.save({
                   }
                   else if(name._shortName) {
                    
-                    this.name=name._shortName;
+                     this.coll=name;
                   }
             }
+            
             this.pipeline=[];
             
         }
@@ -1359,6 +1360,7 @@ db.system.js.save({
                 }
             }
             if(this.coll){
+               
               	return this.coll.aggregate(this.pipeline,op);
             }
             else {
@@ -1767,7 +1769,12 @@ db.system.js.save({
 	    }
         qr.prototype.find=function(){
           if(arguments.length==0){
-          	  	return db.getCollection(this.name).find({});
+          	  	if(this.coll){
+		      	    return this.coll.find({});
+		        }
+		        else {
+		            return db.getCollection(this.name).find({});
+		        }
           	}
             var selectors=arguments[0];
             var params =[];
@@ -1783,8 +1790,14 @@ db.system.js.save({
 		    }
         }
         qr.prototype.findOne=function(){
+         
           	if(arguments.length==0){
-          	  	return db.getCollection(this.name).findOne({});
+          	  	if(this.coll){
+		      	    return this.coll.findOne({});
+		        }
+    		    else {
+    		    	return db.getCollection(this.name).findOne({});
+    		    }
           	}
             var selectors=arguments[0];
             var params =[];
@@ -1921,6 +1934,38 @@ db.system.js.save({
 	      	}
 	      	return ret;
 	    }
+       	qr.prototype.inc=function(data){
+       	   var ret=new entity(this);
+       	  	if(!ret._updateData){
+	      	  	ret._updateData={};
+	      	}
+	      	if(!ret._updateData.$inc){
+	      	  ret._updateData.$inct={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   ret._updateData.$inc[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return ret;
+       	}
+       	qr.prototype.rename=function(data){
+       	   var ret=new entity(this);
+       	  	if(!ret._updateData){
+	      	  	ret._updateData={};
+	      	}
+	      	if(!ret._updateData.$rename){
+	      	  ret._updateData.$rename={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   ret._updateData.$rename[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return ret;
+       	}
        	qr.prototype.set=function(data){
        	   var ret=new entity(this);
        	  	if(!ret._updateData){
@@ -1933,6 +1978,22 @@ db.system.js.save({
 	      	for(var i=0;i<keys.length;i++){
 	      	  if(keys[i]!="_id"){
 	      	   ret._updateData.$set[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return ret;
+       	}
+       	qr.prototype.unset=function(data){
+       	   var ret=new entity(this);
+       	  	if(!ret._updateData){
+	      	  	ret._updateData={};
+	      	}
+	      	if(!ret._updateData.$unset){
+	      	  ret._updateData.$unset={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   ret._updateData.$unset[keys[i]]=data[keys[i]];
 	      	  }
 	      	}
 	      	return ret;
@@ -2066,7 +2127,36 @@ db.system.js.save({
     	  	}
       		
 	    }
-	    
+	    entity.prototype.inc=function(data){
+	      	if(!this._updateData){
+	      	  	this._updateData={};
+	      	}
+	      	if(!this._updateData.$inc){
+	      	  this._updateData.$inc={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   this._updateData.$inc[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return this;
+	    }
+	    entity.prototype.rename=function(data){
+	      	if(!this._updateData){
+	      	  	this._updateData={};
+	      	}
+	      	if(!this._updateData.$rename){
+	      	  this._updateData.$rename={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   this._updateData.$rename[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return this;
+	    }
 	    entity.prototype.set=function(data){
 	      	if(!this._updateData){
 	      	  	this._updateData={};
@@ -2082,6 +2172,21 @@ db.system.js.save({
 	      	}
 	      	return this;
 	    }
+	    qr.prototype.unset=function(data){
+       	   if(!this._updateData){
+	      	  	this._updateData={};
+	      	}
+	      	if(!this._updateData.$unset){
+	      	  this._updateData.$unset={};
+	      	}
+	      	var keys=Object.keys(data);
+	      	for(var i=0;i<keys.length;i++){
+	      	  if(keys[i]!="_id"){
+	      	   this._updateData.$unset[keys[i]]=data[keys[i]];
+	      	  }
+	      	}
+	      	return this;
+       	}
 	    entity.prototype.info=function(){
 	       return db.getCollectionInfos({name:this.coll._shortName})
 	       
