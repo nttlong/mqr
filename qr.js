@@ -563,6 +563,9 @@ qr.prototype.info = function () {
 
 
 };
+/**
+ * @returns {entity}
+ */
 qr.prototype.insert = function () {
     var ret = new entity(this, null);
     var isArray = arguments[0].push != undefined;
