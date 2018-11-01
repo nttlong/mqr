@@ -775,7 +775,7 @@ db.system.js.save({
         
         return fx.value;
     }
-    var avgFuncs=";avg;sum;min;max;push;addToSet;strLenBytes;strLenCP;strLenBytes;sqrt;toString;type;last;first;"
+    var avgFuncs=";avg;sum;min;max;push;addToSet;strLenBytes;strLenCP;strLenBytes;sqrt;toString;type;last;first;literal;"
     var ret={};
     var op={
         "==":"$eq",
