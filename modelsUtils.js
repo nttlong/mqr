@@ -121,15 +121,22 @@ function unwindFields(obj){
                         bsonType: val.detail
                     }
                 };
+                if (val.required && val.required.length > 0) {
+                    ret[key].items.required = val.required;
+                }
             }
             else {
                 ret[key] = {
                     bsonType: "array",
                     items: {
                         bsonType:"object",
+                        required:val.required,
                         properties: convertToMongodb(val.detail)
                     } 
                 };
+                if (val.required && val.required.length>0){
+                    ret[key].items.required=val.required;
+                }
             }
             
         }
@@ -151,7 +158,8 @@ function createModel(name,indexes,required,fields){
     }
     indexes = convertIndexes(indexes);
     var _fields = unwindFields(fields);
-    var bsonFields = convertToMongodb(_fields)
+    var bsonFields = convertToMongodb(_fields);
+    delete bsonFields.required;
 
     __models[name]={
         name:name,
@@ -313,9 +321,10 @@ function applyAllModels(db){
  * @param {BSONTypes} fieldType
  * @param {*} detail 
  */
-function embeded(fieldType,detail){
+function embeded(fieldType,required,detail){
     return {
         fieldType:fieldType,
+        required: required,
         detail:detail
     }
 
