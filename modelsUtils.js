@@ -1,10 +1,17 @@
 var __models={};
 var __modelHasApplied={};
 var sync=require("./sync");
-function IndexInfo(fields,options){
-    this.fields=fields;
-    this.options=options;
+var IndexTypes={
+    unique:{
+        unique:true
+    }
 }
+function IndexInfo(){
+    
+}
+IndexInfo.prototype.fields={};
+IndexInfo.prototype.options = IndexTypes;
+
 /**
  * 
  * @param {string} name 
@@ -27,10 +34,76 @@ var BSONTypes={
     String:"string",
     Array:"array"
 };
+function convertIndex(info){
+    var ret={
+        fields:{}
+    };
+    if(info.fields instanceof Array){
+        for (var i = 0; i < info.fields.length; i++) {
+            ret.fields[info.fields[i]]=1
+        }
+        ret.options=info.options;
+        return ret;
+    }
+    else {
+        return info;
+    }
+   
+    
+}
+function convertIndexes(lst){
+    var ret=[];
+    for(var i=0;i<lst.length;i++){
+        ret.push(convertIndex(lst[i]));
+    }
+    return ret;
+}
 var _CheckKeys={};
 for(var i=0;i<Object.keys(BSONTypes).length;i++){
     _CheckKeys[BSONTypes[Object.keys(BSONTypes)[i]]]=true;
 }
+function unwindFields(obj){
+    var keys=Object.keys(obj);
+    var ret={};
+    for(var i=0;i<keys.length;i++){
+        var key=keys[i];
+        var val=obj[key];
+        if(typeof val==="string"){
+            ret[key]=val;
+        }
+        else if ((val.fieldType === BSONTypes.Array)||
+            (val.fieldType === BSONTypes.Object)){
+            ret[key]=val.fieldType;
+            if(typeof val.detail!=="string" ){
+                var detail = unwindFields(val.detail);
+                var keysOfDetails=Object.keys(detail);
+                for (var j = 0; j < keysOfDetails.length;j++){
+                    var keyOfDetail=keysOfDetails[j];
+                    var valOfDetail = detail[keyOfDetail];
+                    ret[key + "." + keyOfDetail] = valOfDetail;
+                }
+            }
+            else if(val.fieldType===BSONTypes.Array){
+                ret[key]={
+                    bsonType: "array",
+                    items :{
+                        bsonType:val.detail
+                    } 
+                };
+            }
+
+        }
+    }
+    return ret;
+
+}
+/**
+ * 
+ * @param {*} name 
+ * @param {IndexInfo[]} indexes
+ * @param {string[]} required 
+ * @param {string|mDocument} fields 
+ */
 function createModel(name,indexes,required,fields){
     function convert(obj) {
         if(obj==undefined || obj==null){
@@ -41,7 +114,8 @@ function createModel(name,indexes,required,fields){
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             var val = obj[key];
-            if(typeof val==="string"){
+            if(typeof val==="string" ||
+              (val instanceof Array)){
                 if (!_CheckKeys[val]){
                     throw(new Error("'"+val+"' is invalid data type, please user FieldTypes"))
                 }
@@ -49,8 +123,12 @@ function createModel(name,indexes,required,fields){
                     bsonType: val
                 };
             }
+            else if(val.bsonType){
+                ret[key]=val;
+            }
             else {
-                ret[key]=convert(val);
+              
+                ret[key] = convert(val);
             }
         }
         return ret;
@@ -58,20 +136,15 @@ function createModel(name,indexes,required,fields){
     if(indexes &&(!(indexes instanceof Array))){
         throw("the second param must be Array");
     }
+    indexes = convertIndexes(indexes);
+    var _fields = unwindFields(fields);
+    var bsonFields = convert(_fields)
 
-    if (indexes && indexes.length>0){
-        for(var i=0;i<indexes.length;i++){
-            if(!(indexes[i] instanceof IndexInfo)){
-                throw (new Error("the element in second param must be 'IndexInfo'"));
-            }
-        }
-    }
-   
     __models[name]={
         name:name,
         indexes:indexes,
         required:required,
-        fields:convert(fields)
+        fields: bsonFields
     };
 }
 function isExistCollection(db,name,cb){
@@ -182,10 +255,6 @@ function createJsonSchemaValidator(db,name,required,fields){
     
 }
 function createIndex(db,name,index,cb){
-    if (!(index instanceof IndexInfo)){
-        throw (new Error("index must be 'IndexInfo'"));
-    }
-    
     function run(cb){
         db.collection(name).createIndex(index.fields,index.options, function (e, r) {
               cb(e,r);  
@@ -207,9 +276,6 @@ function applyAllModel(db,name,cb){
         if (__models[name].indexes &&
             (__models[name].indexes.length>0)){
                 for (var i = 0; i < __models[name].indexes.length;i++){
-                    if (!(__models[name].indexes[i] instanceof IndexInfo)) {
-                        throw (new Error("index "+i+" be 'IndexInfo'"));
-                    }
                     createIndex(db, name, __models[name].indexes[i]);
                 }
             
@@ -221,12 +287,27 @@ function applyAllModel(db,name,cb){
         __modelHasApplied[name]=true;
     }
 }
+
+
 function applyAllModels(db){
     var keys=Object.keys(__models);
     for(var i=0;i<keys.length;i++){
         applyAllModel(db,keys[i]);
     }
 }
+/**
+ * 
+ * @param {BSONTypes} fieldType
+ * @param {*} detail 
+ */
+function embeded(fieldType,detail){
+    return {
+        fieldType:fieldType,
+        detail:detail
+    }
+
+}
+
 module.exports={
     createModel: createModel,
     models:__models,
@@ -235,5 +316,7 @@ module.exports={
     createIndexInfo: function(fields,options){
         return new IndexInfo(fields,options);
     },
-    FieldTypes: BSONTypes
+    FieldTypes: BSONTypes,
+    IndexTypes: IndexTypes,
+    embeded:embeded
 };
