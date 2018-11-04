@@ -58,7 +58,7 @@ function convertIndexes(lst){
     }
     return ret;
 }
-function convertToMongodb(obj) {
+function convertToMongodb(obj,parentKey) {
     if (obj == undefined || obj == null) {
         return undefined;
     }
@@ -68,9 +68,17 @@ function convertToMongodb(obj) {
         var key = keys[i];
         var val = obj[key];
         if (typeof val === "string" ||
-            (val instanceof Array)) {
+            ((val instanceof Array)&&
+            (val.length>0))) {
             if (!_CheckKeys[val]) {
-                throw (new Error("'" + val + "' is invalid data type, please user FieldTypes"))
+                //return;
+                if (parentKey){
+                    throw (new Error(`'${val}' of '${parentKey + "." + key}' is invalid datatype`))
+                }
+                else {
+                    throw (new Error(`'${val}' of '${key}' is invalid datatype`))
+                }
+                
             }
             ret[key] = {
                 bsonType: val
@@ -81,7 +89,7 @@ function convertToMongodb(obj) {
         }
         else {
 
-            ret[key] = convertToMongodb(val);
+            ret[key] = convertToMongodb(val,key);
         }
     }
     return ret;
