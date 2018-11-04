@@ -87,6 +87,14 @@ function convertToMongodb(obj,parentKey) {
         else if (val.bsonType) {
             ret[key] = val;
         }
+        else if (typeof val.detail==="string"){
+            ret[key]={
+                bsonType:val.fieldType,
+                items:{
+                    bsonType: val.detail
+                }
+            };
+        }
         else {
 
             ret[key] = convertToMongodb(val,key);
@@ -138,7 +146,7 @@ function unwindFields(obj){
                     bsonType: "array",
                     items: {
                         bsonType:"object",
-                        required:val.required,
+                      
                         properties: convertToMongodb(val.detail)
                     } 
                 };
