@@ -58,6 +58,34 @@ function convertIndexes(lst){
     }
     return ret;
 }
+function convertToMongodb(obj) {
+    if (obj == undefined || obj == null) {
+        return undefined;
+    }
+    var ret = {};
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var val = obj[key];
+        if (typeof val === "string" ||
+            (val instanceof Array)) {
+            if (!_CheckKeys[val]) {
+                throw (new Error("'" + val + "' is invalid data type, please user FieldTypes"))
+            }
+            ret[key] = {
+                bsonType: val
+            };
+        }
+        else if (val.bsonType) {
+            ret[key] = val;
+        }
+        else {
+
+            ret[key] = convertToMongodb(val);
+        }
+    }
+    return ret;
+}
 var _CheckKeys={};
 for(var i=0;i<Object.keys(BSONTypes).length;i++){
     _CheckKeys[BSONTypes[Object.keys(BSONTypes)[i]]]=true;
@@ -71,8 +99,7 @@ function unwindFields(obj){
         if(typeof val==="string"){
             ret[key]=val;
         }
-        else if ((val.fieldType === BSONTypes.Array)||
-            (val.fieldType === BSONTypes.Object)){
+        else if (val.fieldType === BSONTypes.Object){
             ret[key]=val.fieldType;
             if(typeof val.detail!=="string" ){
                 var detail = unwindFields(val.detail);
@@ -83,15 +110,28 @@ function unwindFields(obj){
                     ret[key + "." + keyOfDetail] = valOfDetail;
                 }
             }
-            else if(val.fieldType===BSONTypes.Array){
-                ret[key]={
+            
+
+        }
+        else if (val.fieldType === BSONTypes.Array) {
+            if(typeof val.detail==="string"){
+                ret[key] = {
                     bsonType: "array",
-                    items :{
-                        bsonType:val.detail
+                    items: {
+                        bsonType: val.detail
+                    }
+                };
+            }
+            else {
+                ret[key] = {
+                    bsonType: "array",
+                    items: {
+                        bsonType:"object",
+                        properties: convertToMongodb(val.detail)
                     } 
                 };
             }
-
+            
         }
     }
     return ret;
@@ -105,40 +145,13 @@ function unwindFields(obj){
  * @param {string|mDocument} fields 
  */
 function createModel(name,indexes,required,fields){
-    function convert(obj) {
-        if(obj==undefined || obj==null){
-            return undefined;
-        }
-        var ret = {};
-        var keys = Object.keys(obj);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            var val = obj[key];
-            if(typeof val==="string" ||
-              (val instanceof Array)){
-                if (!_CheckKeys[val]){
-                    throw(new Error("'"+val+"' is invalid data type, please user FieldTypes"))
-                }
-                ret[key] = {
-                    bsonType: val
-                };
-            }
-            else if(val.bsonType){
-                ret[key]=val;
-            }
-            else {
-              
-                ret[key] = convert(val);
-            }
-        }
-        return ret;
-    }
+    
     if(indexes &&(!(indexes instanceof Array))){
         throw("the second param must be Array");
     }
     indexes = convertIndexes(indexes);
     var _fields = unwindFields(fields);
-    var bsonFields = convert(_fields)
+    var bsonFields = convertToMongodb(_fields)
 
     __models[name]={
         name:name,
