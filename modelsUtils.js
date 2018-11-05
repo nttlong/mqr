@@ -180,12 +180,12 @@ function createModel(name,indexes,required,fields){
 
     __models[name]={
         name:name,
-      
-        required:required,
+        indexes:indexes,
+       
         fields: bsonFields
     };
-    if (indexes.length>0){
-        __models[name].indexes=indexes;
+    if (required.length>0){
+        __models[name].required = required;
 
     }
 }
@@ -271,11 +271,14 @@ function createJsonSchemaValidator(db,name,required,fields){
         validator: {
             $jsonSchema: {
                 bsonType: "object",
-                required: required,
+               
                 properties: fields
             }
         }
     };
+    if(required && required.length>0){
+        options.validator.$jsonSchema.required=required;
+    }
      function run(cb){
          db.db.eval("db.createCollection('"+name+"',"+JSON.stringify(options)+")",function(e,r){
              if(r.ok==0){
