@@ -180,10 +180,14 @@ function createModel(name,indexes,required,fields){
 
     __models[name]={
         name:name,
-        indexes:indexes,
+      
         required:required,
         fields: bsonFields
     };
+    if (indexes.length>0){
+        __models[name].indexes=indexes;
+
+    }
 }
 function isExistCollection(db,name,cb){
     function run(cb) {
