@@ -32,7 +32,8 @@ var BSONTypes={
     MinKey: "minKey",
     MaxKey:"maxKey",
     String:"string",
-    Array:"array"
+    Array:"array",
+    Object:"object"
 };
 function convertIndex(info){
     var ret={
