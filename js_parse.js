@@ -240,7 +240,7 @@ function js_parse(fx, params, forSelect, forNot, prefix){
         if (fx.callee.name == "in" && (!forSelect)) {
             var ret = {};
 
-            var field = js_parse(fx.arguments[0], params, true, forNot, "$");
+            var field = js_parse(fx.arguments[0], params, true, forNot);
             if (typeof field != "string") {
                 throw (new Error("match or where with $in must be begin with field name, not object"))
             }
