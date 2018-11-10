@@ -161,13 +161,7 @@ function unwindFields(obj){
     return ret;
 
 }
-/**
- * 
- * @param {*} name 
- * @param {IndexInfo[]} indexes
- * @param {string[]} required 
- * @param {string|mDocument} fields 
- */
+
 function createModel(name,indexes,required,fields){
     
     if(indexes &&(!(indexes instanceof Array))){
@@ -340,11 +334,7 @@ function applyAllModels(db){
         applyAllModel(db,keys[i]);
     }
 }
-/**
- * 
- * @param {BSONTypes} fieldType
- * @param {*} detail 
- */
+
 function embeded(fieldType,required,detail){
     return {
         fieldType:fieldType,

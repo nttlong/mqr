@@ -57,7 +57,7 @@ entity.prototype.count = function () {
                 $count: "retCount"
             }
         ]).toArray();
-        if (ret.length == 0) {
+        if (ret.length === 0) {
             return 0;
         }
         else {
@@ -71,7 +71,7 @@ entity.prototype.count = function () {
                 $count: "ret"
             }
         ]).toArray();
-        if (ret.length == 0) {
+        if (ret.length === 0) {
             return 0;
         }
         else {
@@ -83,7 +83,7 @@ entity.prototype.commit = function () {
     var cb = null;
     var db=this._owner.db;
     models.applyAllModels(db);
-    if (arguments.length == 1) {
+    if (arguments.length === 1) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
         }
@@ -91,7 +91,7 @@ entity.prototype.commit = function () {
             this.db = arguments[0];
         }
     }
-    else if (arguments.length == 2) {
+    else if (arguments.length === 2) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
             this.db = arguments[1];
@@ -104,7 +104,7 @@ entity.prototype.commit = function () {
     var me = this;
     me.coll=db.collection(me._owner.name);
     function run(cb) {
-        if (me._insertItem != null) {
+        if (me._insertItem !== null) {
             return me.coll.insertOne(me._insertItem,function(e,r){
                 if (r && r.insertedId) {
                     me._insertItem._id = r.insertedId;
@@ -130,7 +130,7 @@ entity.prototype.commit = function () {
                 
             });
         }
-        if (me._insertItems != null) {
+        if (me._insertItems !== null) {
             return me.coll.insertMany(me._insertItems,function(e,r){
                 if(!e){
                     for (var i = 0; i < r.insertedIds.length;i++){
@@ -140,7 +140,7 @@ entity.prototype.commit = function () {
                     return;
                 }
                 var ret = errors_parse.getError(db,me._owner.name, e, me._insertItems);
-                if(ret!=null){
+                if(ret!==null){
                     cb(null,{
                         error:ret,
                         data:me._insertItems
@@ -198,12 +198,12 @@ entity.prototype.commit = function () {
 entity.prototype.insert = function () {
     this._insertItem = null;
     this._insertItems = null;
-    var isArray = arguments[0].push != undefined;
+    var isArray = arguments[0].push !== undefined;
     if (isArray) {
         this._insertItems = arguments[0];
         return this;
     }
-    if (arguments.length == 1) {
+    if (arguments.length === 1) {
         this._insertItem = arguments[0];
     }
     else {
@@ -224,7 +224,7 @@ entity.prototype.mul = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             this._updateData.$mul[keys[i]] = data[keys[i]];
         }
     }
@@ -239,7 +239,7 @@ entity.prototype.inc = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             this._updateData.$inc[keys[i]] = data[keys[i]];
         }
     }
@@ -254,7 +254,7 @@ entity.prototype.unset = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             this._updateData.$unset[keys[i]] = data[keys[i]];
         }
     }
@@ -269,7 +269,7 @@ entity.prototype.set = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             this._updateData.$set[keys[i]] = data[keys[i]];
         }
     }
@@ -314,7 +314,7 @@ entity.prototype.pullAll = function () {
     if (!this._updateData.$pullAll) {
         this._updateData.$pullAll = {};
     }
-    if (typeof selectors == "string") {
+    if (typeof selectors === "string") {
 
         _expr = js_parse(jsep(selectors, params), params);
         keys = Object.keys(_expr);
@@ -346,7 +346,7 @@ entity.prototype.pull = function () {
     if (!this._updateData.$pull) {
         this._updateData.$pull = {};
     }
-    if (typeof selectors == "string") {
+    if (typeof selectors === "string") {
 
         _expr = js_parse(jsep(selectors, params), params);
         keys = Object.keys(_expr);

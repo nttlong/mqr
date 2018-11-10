@@ -1,4 +1,4 @@
-export = MongodbUtils;
+
 export interface ILookupPipeline {
     from: string;
     let?: any;
@@ -71,6 +71,22 @@ export enum BSONTypes {
     Array = "array",
     Object = "object"
 }
+export enum FieldTypes {
+    ObjectId = "objectId",
+    Boolean = "bool",
+    Date = "date",
+    Null = "null",
+    RegularExpression = "regex",
+    Int32 = "int",
+    Timestamp = "timestamp",
+    Int64 = "long",
+    Decimal = "decimal",
+    MinKey = "minKey",
+    MaxKey = "maxKey",
+    String = "string",
+    Array = "array",
+    Object = "object"
+}
 export interface IFieldObject {
     fieldType: BSONTypes;
     required?: string[];
@@ -127,13 +143,15 @@ export interface IQuery {
     (db?: any, collectionName?: string): IQueryable;
     parse: (data: any) => any
 }
+export interface IndexTypes extends IIndexConfig {
 
+}
 // Merge the namespace properties into the getTime function declaration.
-declare namespace MongodbUtils {
+export declare namespace MongodbUtils {
     export var query: IQuery;
     export function model(collectionName: string, indexes: IIndexConfig[], required: string[], fields: IFieldInfo);
-    export var FieldTypes: BSONTypes;
-    export var IndexTypes: IIndexConfig
+  
+    
     export function createIndexInfo(fields: IIndexConfigFields, options?: IIndexConfigOptions): any;
     export function embeded(fieldType: BSONTypes, required?: string[], detail?: IFieldInfo): any
 }
