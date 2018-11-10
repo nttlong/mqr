@@ -60,7 +60,7 @@ function convertIndexes(lst){
     return ret;
 }
 function convertToMongodb(obj,parentKey) {
-    if (obj == undefined || obj == null) {
+    if (obj === undefined || obj === null) {
         return undefined;
     }
     var ret = {};
@@ -281,7 +281,7 @@ function createJsonSchemaValidator(db,name,required,fields){
     }
      function run(cb){
          db.db.eval("db.createCollection('"+name+"',"+JSON.stringify(options)+")",function(e,r){
-             if(r.ok==0){
+             if(r.ok===0){
                  db.db.command({
                      "collMod": name,
                      "validator": options.validator,

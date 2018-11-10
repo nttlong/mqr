@@ -6,17 +6,17 @@ var sync=require("./sync");
 var mg=require("mongoose");
 
 function qr() {
-    if(arguments.length==1){
+    if(arguments.length===1){
         this.name = arguments[0];
     }
-    else if(arguments.length==2){
+    else if(arguments.length===2){
         this.db=arguments[0];
         this.name=arguments[1];
     }
     this.pipeline = [];
 }
 qr.prototype.parse = function (obj, params, forMatch, isSecond) {
-    if (obj == undefined) {
+    if (obj === undefined) {
         return undefined;
     }
     if (!forMatch) {
@@ -91,7 +91,7 @@ qr.prototype.addFields = function () {
 };
 qr.prototype.items = function (db,options) {
     var cb = null;
-    if (arguments.length == 1) {
+    if (arguments.length === 1) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
         }
@@ -99,7 +99,7 @@ qr.prototype.items = function (db,options) {
             this.db = arguments[0];
         }
     }
-    else if (arguments.length == 2) {
+    else if (arguments.length === 2) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
             this.db = arguments[1];
@@ -138,7 +138,7 @@ qr.prototype.items = function (db,options) {
 };
 qr.prototype.item = function () {
     var cb=null;
-    if(arguments.length==1){
+    if(arguments.length===1){
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
         }
@@ -146,7 +146,7 @@ qr.prototype.item = function () {
             this.db=arguments[0];
         }
     }
-    else if(arguments.length==2) {
+    else if(arguments.length===2) {
         if (typeof arguments[0] === "function") {
             cb = arguments[0];
             this.db = arguments[1];
@@ -169,7 +169,7 @@ qr.prototype.item = function () {
                         cb(e);
                     }
                     else {
-                        if(lst.length==0){
+                        if(lst.length===0){
                             cb(null, null);
                         }
                         else {
@@ -255,7 +255,7 @@ qr.prototype.orderBy = function () {
 qr.prototype.sortByCount = function () {
     var params = [];
     for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+        params.push(arguments[i]);
     }
     this.pipeline.push({
         $sortByCount: this.parse(arguments[0], params, false, false)
@@ -264,13 +264,13 @@ qr.prototype.sortByCount = function () {
 };
 qr.prototype.unwind = function () {
 
-    if (arguments.length == 1) {
+    if (arguments.length === 1) {
         this.pipeline.push({
             $unwind: "$" + arguments[0]
         });
         return this;
     }
-    else if (arguments.length == 2) {
+    else if (arguments.length === 2) {
         if (typeof arguments[1] === "string") {
             this.pipeline.push({
                 $unwind: {
@@ -291,7 +291,7 @@ qr.prototype.unwind = function () {
             return this;
         }
     }
-    else if (arguments.length == 3) {
+    else if (arguments.length === 3) {
         if (typeof arguments[1] === "string") {
             this.pipeline.push({
                 $unwind: {
@@ -318,9 +318,9 @@ qr.prototype.replaceRoot = function () {
     var _obj = arguments[0];
     var params = [];
     for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+        params.push(arguments[i]);
     }
-    if (typeof _obj == "string") {
+    if (typeof _obj === "string") {
         this.pipeline.push({
             $replaceRoot: { newRoot: this.parse(_obj, params) }
         });
@@ -339,19 +339,19 @@ qr.prototype.bucket = function () {
     var data = arguments[0];
     var params = [];
     for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+        params.push(arguments[i]);
     }
     if (!data.groupBy) {
-        throw (new Error("'groupBy' was not found"))
+        throw (new Error("'groupBy' was not found"));
     }
     if (data.boundaries === undefined) {
-        throw (new Error("'boundaries' was not found"))
+        throw (new Error("'boundaries' was not found"));
     }
     if (!data.default) {
-        throw (new Error("'default' was not found"))
+        throw (new Error("'default' was not found"));
     }
     if (!data.output) {
-        throw (new Error("'output' was not found"))
+        throw (new Error("'output' was not found"));
     }
     // if(!(data.boundaries.push)){
     //     throw(new Error("'boundaries' must be an array"))
@@ -405,12 +405,12 @@ qr.prototype.bucketAuto = function () {
 qr.prototype.facet = function () {
     var data = arguments[0];
     var keys = Object.keys(data);
-    var _facet = {}
+    var _facet = {};
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var val = data[key];
         if (!val.pipeline) {
-            throw (new Error("'" + key + "' is not 'query'"))
+            throw (new Error("'" + key + "' is not 'query'"));
         }
         _facet[key] = val.pipeline;
 
@@ -440,7 +440,7 @@ qr.prototype.lookup = function () {
         }
     }
     else if (typeof param1 === "string") {
-        var _from = param1;
+        _from = param1;
         localField = arguments[1];
         foreignField = arguments[2];
         as = arguments[3];
@@ -505,7 +505,7 @@ qr.prototype.group = function () {
     var selectors = arguments[0];
     var params = [];
     for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+        params.push(arguments[i]);
     }
     var data = this.parse(selectors, params);
 
@@ -563,13 +563,11 @@ qr.prototype.info = function () {
 
 
 };
-/**
- * @returns {entity}
- */
+
 qr.prototype.insert = function () {
     var ret = new entity(this, null);
-    var isArray = arguments[0].push != undefined;
-    if (arguments.length == 1) {
+    var isArray = arguments[0].push !== undefined;
+    if (arguments.length === 1) {
         ret.insert(arguments[0]);
         return ret;
     }
@@ -601,7 +599,7 @@ entity.prototype.pullAll = function () {
     var params = [];
     var ret = new entity(this);
     for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+        params.push(arguments[i]);
     }
     if (!ret._updateData) {
         ret._updateData = {};
@@ -610,7 +608,7 @@ entity.prototype.pullAll = function () {
         ret._updateData.$pullAll = {};
     }
 
-    if (typeof selectors == "string") {
+    if (typeof selectors === "string") {
 
         var _expr = js_parse(jsep(selectors, params), params);
         var keys = Object.keys(_expr);
@@ -618,9 +616,9 @@ entity.prototype.pullAll = function () {
         return ret;
     }
     else {
-        var _expr = ret._owner.parse(selectors, params, true);
-        var keys = Object.keys(_expr);
-        for (var i = 0; i < keys.length; i++) {
+        _expr = ret._owner.parse(selectors, params, true);
+        keys = Object.keys(_expr);
+        for (i = 0; i < keys.length; i++) {
             ret._updateData.$pullAll[keys[i]] = _expr[keys[i]];
         }
         return ret;
@@ -650,7 +648,7 @@ qr.prototype.mul = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             ret._updateData.$mul[keys[i]] = data[keys[i]];
         }
     }
@@ -666,7 +664,7 @@ qr.prototype.inc = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             ret._updateData.$inc[keys[i]] = data[keys[i]];
         }
     }
@@ -682,7 +680,7 @@ qr.prototype.rename = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             ret._updateData.$rename[keys[i]] = data[keys[i]];
         }
     }
@@ -698,7 +696,7 @@ qr.prototype.unset = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             ret._updateData.$unset[keys[i]] = data[keys[i]];
         }
     }
@@ -714,7 +712,7 @@ qr.prototype.set = function (data) {
     }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i] != "_id") {
+        if (keys[i] !== "_id") {
             ret._updateData.$set[keys[i]] = data[keys[i]];
         }
     }
@@ -732,11 +730,12 @@ qr.prototype.where = function () {
 
 
 qr.prototype.pull = function () {
+    var i = 0;
     var selectors = arguments[0];
     var params = [];
     var ret = new entity(this);
-    for (var i = 1; i < arguments.length; i++) {
-        params.push(arguments[i])
+    for (i = 1; i < arguments.length; i++) {
+        params.push(arguments[i]);
     }
     if (!ret._updateData) {
         ret._updateData = {};
@@ -744,7 +743,7 @@ qr.prototype.pull = function () {
     if (!ret._updateData.$pull) {
         ret._updateData.$pull = {};
     }
-    if (typeof selectors == "string") {
+    if (typeof selectors === "string") {
 
         var _expr = js_parse(jsep(selectors, params), params);
         var keys = Object.keys(_expr);
@@ -752,22 +751,20 @@ qr.prototype.pull = function () {
         return ret;
     }
     else {
-        var _expr = ret._owner.parse(selectors, params, true);
-        var keys = Object.keys(_expr);
-        for (var i = 0; i < keys.length; i++) {
+        _expr = ret._owner.parse(selectors, params, true);
+        keys = Object.keys(_expr);
+        for (i = 0; i < keys.length; i++) {
             ret._updateData.$pull[keys[i]] = _expr[keys[i]];
         }
         return ret;
     }
 };
-/**
- * @returns qr
- */
+
 module.exports=function(){
-    if(arguments.length==2){
+    if(arguments.length===2){
         return new qr(arguments[0],arguments[1]);
     }
-    else if(arguments.length==1){
+    else if(arguments.length===1){
         return new qr(arguments[0]);
     }
     else{

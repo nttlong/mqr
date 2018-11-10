@@ -46,6 +46,7 @@
     <Compile Include="js_parse.js" />
     <Compile Include="modelsUtils.js" />
     <Compile Include="mongodb_script.js" />
+    <Compile Include="qr.js" />
     <Compile Include="sync.js" />
     <Compile Include="test.js" />
     <Compile Include="validators.js" />
