@@ -1,0 +1,2 @@
+E:\code\nodejs\n-qr\obj\Debug\mqr_ts.njsproj.CoreCompileInputs.cache
+E:\code\nodejs\n-qr\bin\Microsoft.NodejsTools.WebRole.dll

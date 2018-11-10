@@ -38,7 +38,7 @@ function sync(fn, args, cb) {
         }
     }
     else {
-        var result = undefined;
+        result = undefined;
         fn({
             resolve: resolve,
             reject: reject,
@@ -55,67 +55,73 @@ function sync(fn, args, cb) {
     }
 };
 var _callers = {};
-/**
- * 
- * @param {Function} fn 
- * @param {Function} callback 
- * @param {string} fileName 
- */
+
 function exec(fn, callback, fileName, noneException) {
-    if (fileName) {
-        function run(cb) {
-            var xFileName = fileName;
+    function run1(cb) {
+        var xFileName = fileName;
 
-            try {
-                fn(function (err, result) {
-                    if (err) {
-                        if (noneException) {
-                            cb(null, {
-                                error: err
-                            });
-                        }
-                        else {
-                            cb(err);
-                        }
-
+        try {
+            fn(function (err, result) {
+                if (err) {
+                    if (noneException) {
+                        cb(null, {
+                            error: err
+                        });
                     }
                     else {
-                        if (noneException) {
-                            if (Object.keys(result).length > 2) {
-                                require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
-                            }
-                            else {
-                                if (result.result === undefined) {
-                                    require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
-                                }
-                                else if (result.error === undefined) {
-                                    require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
-                                }
-                                cb(null, { result: result });
-                            }
-                        }
-                        else {
-                            cb(null, result);
-                        }
+                        cb(err);
                     }
-                });
-
-            } catch (error) {
-                if (noneException) {
 
                 }
                 else {
-                    var err = new Error("\r\n Error:'" + xFileName + "'\r\n" +
-                        "error :\r\n'" +
-                        error.message + "\r\n at declare :\r\n" +
-                        fn.toString());
-                    require("../q-exception").next(err, __filename);
+                    if (noneException) {
+                        if (Object.keys(result).length > 2) {
+                            require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
+                        }
+                        else {
+                            if (result.result === undefined) {
+                                require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
+                            }
+                            else if (result.error === undefined) {
+                                require("../q-exception").next(new Error("The callback function:\r\n" + fn.toString() + "\r\n must return an object with result and error"), __filename);
+                            }
+                            cb(null, { result: result });
+                        }
+                    }
+                    else {
+                        cb(null, result);
+                    }
                 }
+            });
 
-
+        } catch (error) {
+            if (!noneException) {
+                var err = new Error("\r\n Error:'" + xFileName + "'\r\n" +
+                    "error :\r\n'" +
+                    error.message + "\r\n at declare :\r\n" +
+                    fn.toString());
+                require("../q-exception").next(err, __filename);
             }
 
+
         }
+
+    }
+    function run2(cb) {
+
+        try {
+            fn(cb);
+
+        } catch (error) {
+            require("../q-exception").next(new Error("\r\n" +
+                "error :\r\n'" +
+                error.message + "\r\n at declare :\r\n" +
+                fn.toString()), __filename);
+        }
+
+    }
+    if (fileName) {
+       
         if (callback) {
             if (noneException) {
                 try {
@@ -148,24 +154,12 @@ function exec(fn, callback, fileName, noneException) {
 
         }
         else {
-            return sync(run, []);
+            return sync(run1, []);
         }
 
     }
     else {
-        function run(cb) {
-
-            try {
-                fn(cb);
-
-            } catch (error) {
-                require("../q-exception").next(new Error("\r\n" +
-                    "error :\r\n'" +
-                    error.message + "\r\n at declare :\r\n" +
-                    fn.toString()), __filename);
-            }
-
-        }
+    
         if (callback) {
             if (noneException) {
                 try {
@@ -197,7 +191,7 @@ function exec(fn, callback, fileName, noneException) {
             }
         }
         else {
-            return sync(run, []);
+            return sync(run2, []);
         }
     }
 }
