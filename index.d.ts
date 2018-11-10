@@ -107,7 +107,7 @@ export interface IQueryable {
     lookup(from: string, localField: string, foreignField: string, alias: string): IQueryable
     lookup(config: ILookupPipeline, ...params: any[]): IQueryable;
     replaceRoot(field: string): IQueryable;
-    rereplaceRoot(selectors: any, ...params: any[]): IQueryable;
+    replaceRoot(selectors: any, ...params: any[]): IQueryable;
     where(expr, ...args: any[]): IEntity;
     insert(data: any): IEntity;
     update(data: any): IEntity;
