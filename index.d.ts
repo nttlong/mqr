@@ -72,7 +72,7 @@ export enum BSONTypes {
     Object = "object"
 }
 export interface IFieldObject {
-    fieldType: BSONTpye;
+    fieldType: BSONTypes;
     required?: string[];
     detail?: IFieldInfo
 }
