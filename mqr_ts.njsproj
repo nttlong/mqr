@@ -51,6 +51,7 @@
     <Compile Include="validators.js" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="index.d.ts" />
     <TypeScriptCompile Include="TypeScript1.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
