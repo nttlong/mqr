@@ -1,10 +1,33 @@
-﻿interface Test {
-    (a: string,... args: any[]); 
-}
-function test(a: string, args: any[]) {
-    console.log(arguments);
-}
-var x: Test = function () {
+﻿import * as fx from "./index"
+import { BSONTypes } from "./index";
 
-}
-x("x", 1, 2, 3, 4);
+//import * as q from "mongoose";
+
+
+fx.model("cccc", [
+    {
+        fields: {
+            x:1
+        },
+        options: {
+            unique: true
+        }
+    }
+
+],
+    {
+        properties: {
+            x: {
+                bsonType: BSONTypes.Array,
+                items: {
+                    properties: {
+
+                    }
+                }
+            }
+        }
+
+    }
+
+)
+

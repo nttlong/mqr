@@ -1,29 +1,29 @@
 
-export interface ILookupPipeline {
+export declare interface ILookupPipeline {
     from: string;
     let?: any;
     pipeline: IQueryable,
     alias: string
 }
-export interface IBucketParam {
+export declare interface IBucketParam {
     groupBy: string | any;
     boundaries: any[];
     default?: any;
     output?: string;
 }
-export interface IBucketAuto {
+export declare interface IBucketAuto {
     groupBy: string | any;
     buckets: any[];
     output?: string;
 }
-export interface IGroupParam {
+export declare interface IGroupParam {
     _id: any,
     [key: string]: any
 }
-export interface IFacetParam {
+export declare interface IFacetParam {
     [key: string]: IQueryable
 }
-export interface IEntity {
+export declare interface IEntity {
     insert(data: any): IEntity;
     update(data: any): IEntity;
     pull(expr: string, ...params: any[]): IEntity;
@@ -42,14 +42,14 @@ export interface IEntity {
     item(): any;
     commit(): any;
 }
-export interface IIndexConfigFields {
+export declare interface IIndexConfigFields {
     [key: string]: number;
 }
-export interface IIndexConfigOptionsCollation {
+export declare interface IIndexConfigOptionsCollation {
     locale: string;
     strength: number;
 }
-export interface IIndexConfigOptions {
+export declare interface IIndexConfigOptions {
     collation?: IIndexConfigOptionsCollation;
     unique?: boolean;
     partialFilterExpression?: any;
@@ -88,13 +88,22 @@ export enum FieldTypes {
     Object = "object"
 }
 export interface IFieldObject {
-    fieldType: BSONTypes;
+    bsonType: BSONTypes;
     required?: string[];
-    detail?: IFieldInfo
+    items?: IProperty
 }
-export interface IFieldInfo {
-    [key: string]: BSONTypes | IFieldObject;
+export interface IProperty {
+    required?: string[];
+    properties: IMongoValidatorField;
 }
+export interface IMongoValidatorField {
+    [x: string]: IFieldObject
+}
+export interface IMongoValidatorFields {
+    required?: Array<string>
+    properties: IMongoValidatorField
+}
+
 export interface IIndexConfig {
     fields: IIndexConfigFields;
     options?: IIndexConfigOptions;
@@ -102,8 +111,8 @@ export interface IIndexConfig {
 export interface IQueryable {
     project(selecttors: any, ...params: any[]): IQueryable;
     match(expr, ...params: any[]): IQueryable;
-    sort(data: any): IQuery;
-    unwind(fields: string): IQuery;
+    sort(data: any): IQueryable;
+    unwind(fields: string): IQueryable;
     lookup(from: string, localField: string, foreignField: string, alias: string): IQueryable
     lookup(config: ILookupPipeline, ...params: any[]): IQueryable;
     replaceRoot(field: string): IQueryable;
@@ -138,20 +147,10 @@ export interface IQueryable {
     redact(expr: string, ...params: any[]): IQueryable;
     createView(name: string): void;
     pipeline: any[];
-}
-export interface IQuery {
-    (db?: any, collectionName?: string): IQueryable;
     parse: (data: any) => any
 }
-export interface IndexTypes extends IIndexConfig {
 
-}
-// Merge the namespace properties into the getTime function declaration.
-export declare namespace MongodbUtils {
-    export var query: IQuery;
-    export function model(collectionName: string, indexes: IIndexConfig[], required: string[], fields: IFieldInfo);
-  
-    
-    export function createIndexInfo(fields: IIndexConfigFields, options?: IIndexConfigOptions): any;
-    export function embeded(fieldType: BSONTypes, required?: string[], detail?: IFieldInfo): any
-}
+export declare function query(db?: any, collectionName?: string): IQueryable;
+
+export declare function model(collectionName: string, indexes: Array<IIndexConfig>, fields: IMongoValidatorFields);
+

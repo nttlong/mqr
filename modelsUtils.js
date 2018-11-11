@@ -162,26 +162,23 @@ function unwindFields(obj){
 
 }
 
-function createModel(name,indexes,required,fields){
+function createModel(name,indexes,fields){
     
     if(indexes &&(!(indexes instanceof Array))){
         throw("the second param must be Array");
     }
     indexes = convertIndexes(indexes);
-    var _fields = unwindFields(fields);
-    var bsonFields = convertToMongodb(_fields);
-    delete bsonFields.required;
+    //var _fields = unwindFields(fields);
+    //var bsonFields = convertToMongodb(_fields);
+    //delete bsonFields.required;
 
     __models[name]={
         name:name,
         indexes:indexes,
        
-        fields: bsonFields
+        fields: fields
     };
-    if (required.length>0){
-        __models[name].required = required;
-
-    }
+   
 }
 function isExistCollection(db,name,cb){
     function run(cb) {
@@ -265,8 +262,8 @@ function createJsonSchemaValidator(db,name,required,fields){
         validator: {
             $jsonSchema: {
                 bsonType: "object",
-               
-                properties: fields
+                required:fields.required,
+                properties: fields.properties
             }
         }
     };
