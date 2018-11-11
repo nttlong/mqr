@@ -1,15 +1,15 @@
-var __models={};
-var __modelHasApplied={};
-var sync=require("./sync");
-var IndexTypes={
-    unique:{
-        unique:true
+var __models = {};
+var __modelHasApplied = {};
+var sync = require("./sync");
+var IndexTypes = {
+    unique: {
+        unique: true
     }
 }
-function IndexInfo(){
-    
+function IndexInfo() {
+
 }
-IndexInfo.prototype.fields={};
+IndexInfo.prototype.fields = {};
 IndexInfo.prototype.options = IndexTypes;
 
 /**
@@ -19,8 +19,8 @@ IndexInfo.prototype.options = IndexTypes;
  * @param {string[]} required 
  * @param {*} fields 
  */
-var BSONTypes={
-    ObjectId:"objectId",
+var BSONTypes = {
+    ObjectId: "objectId",
     Boolean: "bool",
     Date: "date",
     Null: "null",
@@ -30,36 +30,36 @@ var BSONTypes={
     Int64: "long",
     Decimal: "decimal",
     MinKey: "minKey",
-    MaxKey:"maxKey",
-    String:"string",
-    Array:"array",
-    Object:"object"
+    MaxKey: "maxKey",
+    String: "string",
+    Array: "array",
+    Object: "object"
 };
-function convertIndex(info){
-    var ret={
-        fields:{}
+function convertIndex(info) {
+    var ret = {
+        fields: {}
     };
-    if(info.fields instanceof Array){
+    if (info.fields instanceof Array) {
         for (var i = 0; i < info.fields.length; i++) {
-            ret.fields[info.fields[i]]=1
+            ret.fields[info.fields[i]] = 1
         }
-        ret.options=info.options;
+        ret.options = info.options;
         return ret;
     }
     else {
         return info;
     }
-   
-    
+
+
 }
-function convertIndexes(lst){
-    var ret=[];
-    for(var i=0;i<lst.length;i++){
+function convertIndexes(lst) {
+    var ret = [];
+    for (var i = 0; i < lst.length; i++) {
         ret.push(convertIndex(lst[i]));
     }
     return ret;
 }
-function convertToMongodb(obj,parentKey) {
+function convertToMongodb(obj, parentKey) {
     if (obj === undefined || obj === null) {
         return undefined;
     }
@@ -69,17 +69,17 @@ function convertToMongodb(obj,parentKey) {
         var key = keys[i];
         var val = obj[key];
         if (typeof val === "string" ||
-            ((val instanceof Array)&&
-            (val.length>0))) {
+            ((val instanceof Array) &&
+                (val.length > 0))) {
             if (!_CheckKeys[val]) {
                 //return;
-                if (parentKey){
+                if (parentKey) {
                     throw (new Error(`'${val}' of '${parentKey + "." + key}' is invalid datatype`))
                 }
                 else {
                     throw (new Error(`'${val}' of '${key}' is invalid datatype`))
                 }
-                
+
             }
             ret[key] = {
                 bsonType: val
@@ -88,50 +88,50 @@ function convertToMongodb(obj,parentKey) {
         else if (val.bsonType) {
             ret[key] = val;
         }
-        else if (typeof val.detail==="string"){
-            ret[key]={
-                bsonType:val.fieldType,
-                items:{
+        else if (typeof val.detail === "string") {
+            ret[key] = {
+                bsonType: val.fieldType,
+                items: {
                     bsonType: val.detail
                 }
             };
         }
         else {
 
-            ret[key] = convertToMongodb(val,key);
+            ret[key] = convertToMongodb(val, key);
         }
     }
     return ret;
 }
-var _CheckKeys={};
-for(var i=0;i<Object.keys(BSONTypes).length;i++){
-    _CheckKeys[BSONTypes[Object.keys(BSONTypes)[i]]]=true;
+var _CheckKeys = {};
+for (var i = 0; i < Object.keys(BSONTypes).length; i++) {
+    _CheckKeys[BSONTypes[Object.keys(BSONTypes)[i]]] = true;
 }
-function unwindFields(obj){
-    var keys=Object.keys(obj);
-    var ret={};
-    for(var i=0;i<keys.length;i++){
-        var key=keys[i];
-        var val=obj[key];
-        if(typeof val==="string"){
-            ret[key]=val;
+function unwindFields(obj) {
+    var keys = Object.keys(obj);
+    var ret = {};
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var val = obj[key];
+        if (typeof val === "string") {
+            ret[key] = val;
         }
-        else if (val.fieldType === BSONTypes.Object){
-            ret[key]=val.fieldType;
-            if(typeof val.detail!=="string" ){
+        else if (val.fieldType === BSONTypes.Object) {
+            ret[key] = val.fieldType;
+            if (typeof val.detail !== "string") {
                 var detail = unwindFields(val.detail);
-                var keysOfDetails=Object.keys(detail);
-                for (var j = 0; j < keysOfDetails.length;j++){
-                    var keyOfDetail=keysOfDetails[j];
+                var keysOfDetails = Object.keys(detail);
+                for (var j = 0; j < keysOfDetails.length; j++) {
+                    var keyOfDetail = keysOfDetails[j];
                     var valOfDetail = detail[keyOfDetail];
                     ret[key + "." + keyOfDetail] = valOfDetail;
                 }
             }
-            
+
 
         }
         else if (val.fieldType === BSONTypes.Array) {
-            if(typeof val.detail==="string"){
+            if (typeof val.detail === "string") {
                 ret[key] = {
                     bsonType: "array",
                     items: {
@@ -146,59 +146,59 @@ function unwindFields(obj){
                 ret[key] = {
                     bsonType: "array",
                     items: {
-                        bsonType:"object",
-                      
+                        bsonType: "object",
+
                         properties: convertToMongodb(val.detail)
-                    } 
+                    }
                 };
-                if (val.required && val.required.length>0){
-                    ret[key].items.required=val.required;
+                if (val.required && val.required.length > 0) {
+                    ret[key].items.required = val.required;
                 }
             }
-            
+
         }
     }
     return ret;
 
 }
 
-function createModel(name,indexes,fields){
-    
-    if(indexes &&(!(indexes instanceof Array))){
-        throw("the second param must be Array");
+function createModel(name, indexes, fields) {
+
+    if (indexes && (!(indexes instanceof Array))) {
+        throw ("the second param must be Array");
     }
     indexes = convertIndexes(indexes);
     //var _fields = unwindFields(fields);
     //var bsonFields = convertToMongodb(_fields);
     //delete bsonFields.required;
 
-    __models[name]={
-        name:name,
-        indexes:indexes,
-       
+    __models[name] = {
+        name: name,
+        indexes: indexes,
+
         fields: fields
     };
-   
+
 }
-function isExistCollection(db,name,cb){
+function isExistCollection(db, name, cb) {
     function run(cb) {
-        if(!db.db){
-            db.client.connect().then(function(cnn){
-                var _db=cnn.db(db.name);
-                _db.eval("db.getCollectionInfos({name:'"+name+"'})",function(e,r){
-                    if(e){
+        if (!db.db) {
+            db.client.connect().then(function (cnn) {
+                var _db = cnn.db(db.name);
+                _db.eval("db.getCollectionInfos({name:'" + name + "'})", function (e, r) {
+                    if (e) {
                         cb(e);
                     }
                     else {
-                        cb(null,r.length>0);
+                        cb(null, r.length > 0);
                     }
                 });
 
-            }).catch(function(ex){
+            }).catch(function (ex) {
                 cb(ex);
             });
         }
-        else{
+        else {
             db.db.eval("db.getCollectionInfos({name:'" + name + "'})", function (e, r) {
                 if (e) {
                     cb(e);
@@ -212,17 +212,17 @@ function isExistCollection(db,name,cb){
         //     cb(err, names.length > 0);
         // });
     }
-    if(cb){
+    if (cb) {
         run(cb);
     }
     else {
-        return sync.sync(run,[]);
+        return sync.sync(run, []);
     }
 }
-function createCollection(db,name,cb){
-    function run(cb){
-        db.db.eval("db.createCollection('"+name+"')",function(e,r){
-            cb(e,r);
+function createCollection(db, name, cb) {
+    function run(cb) {
+        db.db.eval("db.createCollection('" + name + "')", function (e, r) {
+            cb(e, r);
         });
     }
     if (cb) {
@@ -232,7 +232,7 @@ function createCollection(db,name,cb){
         return sync.sync(run, []);
     }
 }
-function getValidatorInfo(db,name,cb){
+function getValidatorInfo(db, name, cb) {
     function run(cb) {
         db.db.eval("db.getCollectionInfos({name:'" + name + "'})", function (e, r) {
             if (e) {
@@ -255,45 +255,45 @@ function getValidatorInfo(db,name,cb){
     };
     return sync.sync(run, []);
 }
-function createJsonSchemaValidator(db,name,required,fields){
-    
-    
+function createJsonSchemaValidator(db, name, required, fields) {
+
+
     var options = {
         validator: {
             $jsonSchema: {
                 bsonType: "object",
-                required:fields.required,
+                required: fields.required,
                 properties: fields.properties
             }
         }
     };
-    if(required && required.length>0){
-        options.validator.$jsonSchema.required=required;
+    if (required && required.length > 0) {
+        options.validator.$jsonSchema.required = required;
     }
-     function run(cb){
-         db.db.eval("db.createCollection('"+name+"',"+JSON.stringify(options)+")",function(e,r){
-             if(r.ok===0){
-                 db.db.command({
-                     "collMod": name,
-                     "validator": options.validator,
-                     "validationLevel": "moderate"
-                 },function(e,r){
-                     cb(e, r);
-                 });
-             }
-             else {
-                 cb(e, r);
-             }
-             
-         });
-     }   
-     return sync.sync(run,[]);
-    
+    function run(cb) {
+        db.db.eval("db.createCollection('" + name + "'," + JSON.stringify(options) + ")", function (e, r) {
+            if (r.ok === 0) {
+                db.db.command({
+                    "collMod": name,
+                    "validator": options.validator,
+                    "validationLevel": "moderate"
+                }, function (e, r) {
+                    cb(e, r);
+                });
+            }
+            else {
+                cb(e, r);
+            }
+
+        });
+    }
+    return sync.sync(run, []);
+
 }
-function createIndex(db,name,index,cb){
-    function run(cb){
-        db.collection(name).createIndex(index.fields,index.options, function (e, r) {
-              cb(e,r);  
+function createIndex(db, name, index, cb) {
+    function run(cb) {
+        db.collection(name).createIndex(index.fields, index.options, function (e, r) {
+            cb(e, r);
         });
     }
     if (cb) {
@@ -304,52 +304,57 @@ function createIndex(db,name,index,cb){
     }
 
 }
-function applyAllModel(db,name,cb){
-    if (!__modelHasApplied[name]) {
-        if(!isExistCollection(db,name)){
-            createCollection(db,name);
-        }
-        if (__models[name].indexes &&
-            (__models[name].indexes.length>0)){
-                for (var i = 0; i < __models[name].indexes.length;i++){
+function applyAllModel(db, name, cb) {
+    try {
+        if (!__modelHasApplied[name]) {
+            if (!isExistCollection(db, name)) {
+                createCollection(db, name);
+            }
+            if (__models[name].indexes &&
+                (__models[name].indexes.length > 0)) {
+                for (var i = 0; i < __models[name].indexes.length; i++) {
                     createIndex(db, name, __models[name].indexes[i]);
                 }
-            
-        }
-        if (__models[name].fields) {
-            createJsonSchemaValidator(db, name, __models[name].required, __models[name].fields);
 
+            }
+            if (__models[name].fields) {
+                createJsonSchemaValidator(db, name, __models[name].required, __models[name].fields);
+
+            }
+            __modelHasApplied[name] = true;
         }
-        __modelHasApplied[name]=true;
+    } catch (error) {
+        throw (new Error(`create validator for ${name} is error with ${error.message}`));
     }
+
 }
 
 
-function applyAllModels(db){
-    var keys=Object.keys(__models);
-    for(var i=0;i<keys.length;i++){
-        applyAllModel(db,keys[i]);
+function applyAllModels(db) {
+    var keys = Object.keys(__models);
+    for (var i = 0; i < keys.length; i++) {
+        applyAllModel(db, keys[i]);
     }
 }
 
-function embeded(fieldType,required,detail){
+function embeded(fieldType, required, detail) {
     return {
-        fieldType:fieldType,
+        fieldType: fieldType,
         required: required,
-        detail:detail
+        detail: detail
     }
 
 }
 
-module.exports={
+module.exports = {
     createModel: createModel,
-    models:__models,
+    models: __models,
     isExistCollection: isExistCollection,
-    applyAllModels:applyAllModels,
-    createIndexInfo: function(fields,options){
-        return new IndexInfo(fields,options);
+    applyAllModels: applyAllModels,
+    createIndexInfo: function (fields, options) {
+        return new IndexInfo(fields, options);
     },
     FieldTypes: BSONTypes,
     IndexTypes: IndexTypes,
-    embeded:embeded
+    embeded: embeded
 };

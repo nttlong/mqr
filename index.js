@@ -7,5 +7,6 @@ module.exports = {
     FieldTypes: modelsUtils.FieldTypes,
     IndexTypes: modelsUtils.IndexTypes,
     createIndexInfo: modelsUtils.createIndexInfo,
-    embeded:modelsUtils.embeded
+    embeded: modelsUtils.embeded,
+    BSONTypes: modelsUtils.FieldTypes,
 }
