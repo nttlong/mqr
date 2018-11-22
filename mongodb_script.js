@@ -1,3 +1,99 @@
+
+db.system.js.save({
+    _id:"getTypeNameOfStrExpr",
+    value:function(expr){
+        if(! isString(expr)){
+            try{
+                throw(JSON.stringify(expr) + " is not a string")
+            }
+            catch(ex){
+                throw(expr.toString() + " is not a string")
+            }
+
+        }
+        try {
+            var x= eval("("+expr+")")
+            return x.__proto__.constructor.name
+        }
+        catch(ex){
+            return "String"
+        }
+    }
+})
+
+db.system.js.save({
+    _id:"isObject",
+    value:function(expr){
+        try
+            { return expr.__proto__.constructor.name=="Object"}
+        catch(ex){
+            return false
+        }
+    }
+})
+db.system.js.save({
+    _id:"isNumber",
+    value:function(expr){
+        try {
+                return expr.__proto__.constructor.name=="Number"
+        }
+
+        catch(ex){
+            return false
+        }
+    }
+})
+db.system.js.save({
+    _id:"isArray",
+    value:function(expr){
+        try {
+                return expr.__proto__.constructor.name=="Array"
+        }
+
+        catch(ex){
+            return false
+        }
+    }
+})
+db.system.js.save({
+    _id:"isString",
+    value:function(expr){
+        try
+            {return expr.__proto__.constructor.name=="String"}
+        catch(ex){
+            return false
+        }
+    }
+})
+db.system.js.save({
+    _id:"isFunction",
+    value:function(expr){
+        return expr.call!=undefined
+    }
+})
+db.system.js.save({
+    _id:"isDate",
+    value:function(expr){
+        try
+            {return expr.__proto__.constructor.name=="Date"}
+        catch(ex){
+            return false
+        }
+    }
+})
+//c.__proto__.constructor.name
+
+db.system.js.save({
+    _id:"isBool",
+    value:function(expr){
+        try
+            {return expr.__proto__.constructor.name=="Boolean"}
+        catch(ex){
+            return false
+        }
+    }
+})
+
 db.system.js.save({
 _id:"findCollection",
 value:function(name){
@@ -27,7 +123,7 @@ db.system.js.save({
   value:function(name,required,properties){
     var listOfCollections=db.getCollectionNames()
   	var isExists=false;
-	
+
 	for(var i=0;i<listOfCollections.length;i++){
 	  	if(listOfCollections[i].toLowerCase()==name.toLowerCase()){
 	  	  	isExists= true;
@@ -49,7 +145,7 @@ db.system.js.save({
 	else {
 	  var ret=db.runCommand({
    			collMod: name,
-   			validator: { 
+   			validator: {
    				$jsonSchema: {
          					bsonType: "object",
          					required: required,
@@ -64,12 +160,16 @@ db.system.js.save({
 )
 db.system.js.save({
   _id:"defineFunc",
-  value:function(name,fn){
+  value:function(name,fn, pAuthor, pCreatedDate, pDescription){
 		db.system.js.save({
 		  	_id:name,
-		  	value:fn
-		});  
-		db.loadServerScripts();  
+		  	value:fn,
+		  	author: pAuthor,
+		  	createdDate: pCreatedDate,
+		  	description: pDescription,
+		  	excuteDate: new Date
+		});
+		db.loadServerScripts();
   }
 })
 db.system.js.save(
@@ -80,19 +180,19 @@ db.system.js.save(
 	          params=[]
 	      }
 	      for(var i=0;i<params.length;i++){
-	         
+
 	          while(txt.indexOf("{"+(i)+"}")>-1){
-	              
+
 	              txt=txt.replace("{"+(i)+"}","getParams("+i+")");
-	             
+
 	          }
 	      }
-	
+
 		 function init_jsep(root) {
 			 'use strict';
 			 // Node Types
 			 // ----------
- 
+
 			 // This is the full set of types that any JSEP node can be.
 			 // Store them here to save space when minified
 			 var COMPOUND = 'Compound',
@@ -106,7 +206,7 @@ db.system.js.save(
 				 LOGICAL_EXP = 'LogicalExpression',
 				 CONDITIONAL_EXP = 'ConditionalExpression',
 				 ARRAY_EXP = 'ArrayExpression',
- 
+
 				 PERIOD_CODE = 46, // '.'
 				 COMMA_CODE  = 44, // ','
 				 SQUOTE_CODE = 39, // single quote
@@ -118,17 +218,17 @@ db.system.js.save(
 				 QUMARK_CODE = 63, // ?
 				 SEMCOL_CODE = 59, // ;
 				 COLON_CODE  = 58, // :
- 
+
 				 throwError = function(message, index) {
 					 var error = new Error(message + ' at character ' + index);
 					 error.index = index;
 					 error.description = message;
 					 throw error;
 				 },
- 
+
 			 // Operations
 			 // ----------
- 
+
 			 // Set `t` to `true` to save space (when minified, not gzipped)
 				 t = true,
 			 // Use a quickly-accessible map to store all of the unary operators
@@ -199,7 +299,7 @@ db.system.js.save(
 							 (ch >= 48 && ch <= 57) || // 0...9
 							 (ch >= 128 && !binary_ops[String.fromCharCode(ch)]); // any non-ASCII that is not an operator
 				 },
- 
+
 				 // Parsing
 				 // -------
 				 // `expr` is a string with the passed in expression
@@ -212,7 +312,7 @@ db.system.js.save(
 						 exprI = function(i) { return charAtFunc.call(expr, i); },
 						 exprICode = function(i) { return charCodeAtFunc.call(expr, i); },
 						 length = expr.length,
- 
+
 						 // Push `index` up to the next non-space character
 						 gobbleSpaces = function() {
 							 var ch = exprICode(index);
@@ -221,7 +321,7 @@ db.system.js.save(
 								 ch = exprICode(++index);
 							 }
 						 },
- 
+
 						 // The main parsing function. Much of this code is dedicated to ternary expressions
 						 gobbleExpression = function() {
 							 var test = gobbleBinaryExpression(),
@@ -254,7 +354,7 @@ db.system.js.save(
 								 return test;
 							 }
 						 },
- 
+
 						 // Search for the operation portion of the string (e.g. `+`, `===`)
 						 // Start by taking the longest possible binary operations (3 characters: `===`, `!==`, `>>>`)
 						 // and move down from 3 to 2 to 1 character until a matching binary operation is found
@@ -277,41 +377,41 @@ db.system.js.save(
 							 }
 							 return false;
 						 },
- 
+
 						 // This function is responsible for gobbling an individual expression,
 						 // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
 						 gobbleBinaryExpression = function() {
 							 var ch_i, node, biop, prec, stack, biop_info, left, right, i;
- 
+
 							 // First, try to get the leftmost thing
 							 // Then, check to see if there's a binary operator operating on that leftmost thing
 							 left = gobbleToken();
 							 biop = gobbleBinaryOp();
- 
+
 							 // If there wasn't a binary operator, just return the leftmost node
 							 if(!biop) {
 								 return left;
 							 }
- 
+
 							 // Otherwise, we need to start a stack to properly place the binary operations in their
 							 // precedence structure
 							 biop_info = { value: biop, prec: binaryPrecedence(biop)};
- 
+
 							 right = gobbleToken();
 							 if(!right) {
 								 throwError("Expected expression after " + biop, index);
 							 }
 							 stack = [left, biop_info, right];
- 
+
 							 // Properly deal with precedence using [recursive descent](http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm)
 							 while((biop = gobbleBinaryOp())) {
 								 prec = binaryPrecedence(biop);
- 
+
 								 if(prec === 0) {
 									 break;
 								 }
 								 biop_info = { value: biop, prec: prec };
- 
+
 								 // Reduce: make a binary expression from the three topmost entries.
 								 while ((stack.length > 2) && (prec <= stack[stack.length - 2].prec)) {
 									 right = stack.pop();
@@ -320,14 +420,14 @@ db.system.js.save(
 									 node = createBinaryExpression(biop, left, right);
 									 stack.push(node);
 								 }
- 
+
 								 node = gobbleToken();
 								 if(!node) {
 									 throwError("Expected expression after " + biop, index);
 								 }
 								 stack.push(biop_info, node);
 							 }
- 
+
 							 i = stack.length - 1;
 							 node = stack[i];
 							 while(i > 1) {
@@ -336,15 +436,15 @@ db.system.js.save(
 							 }
 							 return node;
 						 },
- 
+
 						 // An individual part of a binary expression:
 						 // e.g. `foo.bar(baz)`, `1`, `"abc"`, `(a % 2)` (because it's in parenthesis)
 						 gobbleToken = function() {
 							 var ch, to_check, tc_len;
- 
+
 							 gobbleSpaces();
 							 ch = exprICode(index);
- 
+
 							 if(isDecimalDigit(ch) || ch === PERIOD_CODE) {
 								 // Char code 46 is a dot `.` which can start off a numeric literal
 								 return gobbleNumericLiteral();
@@ -374,13 +474,13 @@ db.system.js.save(
 									 }
 									 to_check = to_check.substr(0, --tc_len);
 								 }
- 
+
 								 if (isIdentifierStart(ch) || ch === OPAREN_CODE) { // open parenthesis
 									 // `foo`, `bar.baz`
 									 return gobbleVariable();
 								 }
 							 }
- 
+
 							 return false;
 						 },
 						 // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
@@ -390,15 +490,15 @@ db.system.js.save(
 							 while(isDecimalDigit(exprICode(index))) {
 								 number += exprI(index++);
 							 }
- 
+
 							 if(exprICode(index) === PERIOD_CODE) { // can start with a decimal marker
 								 number += exprI(index++);
- 
+
 								 while(isDecimalDigit(exprICode(index))) {
 									 number += exprI(index++);
 								 }
 							 }
- 
+
 							 ch = exprI(index);
 							 if(ch === 'e' || ch === 'E') { // exponent marker
 								 number += exprI(index++);
@@ -413,8 +513,8 @@ db.system.js.save(
 									 throwError('Expected exponent (' + number + exprI(index) + ')', index);
 								 }
 							 }
- 
- 
+
+
 							 chCode = exprICode(index);
 							 // Check to make sure this isn't a variable name that start with a number (123abc)
 							 if(isIdentifierStart(chCode)) {
@@ -423,19 +523,19 @@ db.system.js.save(
 							 } else if(chCode === PERIOD_CODE) {
 								 throwError('Unexpected period', index);
 							 }
- 
+
 							 return {
 								 type: LITERAL,
 								 value: parseFloat(number),
 								 raw: number
 							 };
 						 },
- 
+
 						 // Parses a string literal, staring with single or double quotes with basic support for escape codes
 						 // e.g. `"hello world"`, `'this is\nJSEP'`
 						 gobbleStringLiteral = function() {
 							 var str = '', quote = exprI(index++), closed = false, ch;
- 
+
 							 while(index < length) {
 								 ch = exprI(index++);
 								 if(ch === quote) {
@@ -457,31 +557,31 @@ db.system.js.save(
 									 str += ch;
 								 }
 							 }
- 
+
 							 if(!closed) {
 								 throwError('Unclosed quote after "'+str+'"', index);
 							 }
- 
+
 							 return {
 								 type: LITERAL,
 								 value: str,
 								 raw: quote + str + quote
 							 };
 						 },
- 
+
 						 // Gobbles only identifiers
 						 // e.g.: `foo`, `_value`, `$x1`
 						 // Also, this function checks if that identifier is a literal:
 						 // (e.g. `true`, `false`, `null`) or `this`
 						 gobbleIdentifier = function() {
 							 var ch = exprICode(index), start = index, identifier;
- 
+
 							 if(isIdentifierStart(ch)) {
 								 index++;
 							 } else {
 								 throwError('Unexpected ' + exprI(index), index);
 							 }
- 
+
 							 while(index < length) {
 								 ch = exprICode(index);
 								 if(isIdentifierPart(ch)) {
@@ -491,7 +591,7 @@ db.system.js.save(
 								 }
 							 }
 							 identifier = expr.slice(start, index);
- 
+
 							 if(literals.hasOwnProperty(identifier)) {
 								 return {
 									 type: LITERAL,
@@ -507,7 +607,7 @@ db.system.js.save(
 								 };
 							 }
 						 },
- 
+
 						 // Gobbles a list of arguments within the context of a function call
 						 // or array literal. This function also assumes that the opening character
 						 // `(` or `[` has already been gobbled, and gobbles expressions and commas
@@ -537,7 +637,7 @@ db.system.js.save(
 							 }
 							 return args;
 						 },
- 
+
 						 // Gobble a non-literal variable name. This variable name may include properties
 						 // e.g. `foo`, `bar.baz`, `foo['bar'].baz`
 						 // It also gobbles function calls:
@@ -545,7 +645,7 @@ db.system.js.save(
 						 gobbleVariable = function() {
 							 var ch_i, node;
 							 ch_i = exprICode(index);
- 
+
 							 if(ch_i === OPAREN_CODE) {
 								 node = gobbleGroup();
 							 } else {
@@ -589,7 +689,7 @@ db.system.js.save(
 							 }
 							 return node;
 						 },
- 
+
 						 // Responsible for parsing a group of things within parentheses `()`
 						 // This function assumes that it needs to gobble the opening parenthesis
 						 // and then tries to gobble everything within that parenthesis, assuming
@@ -606,7 +706,7 @@ db.system.js.save(
 								 throwError('Unclosed (', index);
 							 }
 						 },
- 
+
 						 // Responsible for parsing Array literals `[1, 2, 3]`
 						 // This function assumes that it needs to gobble the opening bracket
 						 // and then tries to gobble the expressions as arguments.
@@ -617,12 +717,12 @@ db.system.js.save(
 								 elements: gobbleArguments(CBRACK_CODE)
 							 };
 						 },
- 
+
 						 nodes = [], ch_i, node;
- 
+
 					 while(index < length) {
 						 ch_i = exprICode(index);
- 
+
 						 // Expressions can be separated by semicolons, commas, or just inferred without any
 						 // separators
 						 if(ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
@@ -638,7 +738,7 @@ db.system.js.save(
 							 }
 						 }
 					 }
- 
+
 					 // If there's only one expression just try returning the expression
 					 if(nodes.length === 1) {
 						 return nodes[0];
@@ -649,11 +749,11 @@ db.system.js.save(
 						 };
 					 }
 				 };
- 
+
 			 // To be filled in by the template
 			 jsep.version = '0.3.4';
 			 jsep.toString = function() { return 'JavaScript Expression Parser (JSEP) v' + jsep.version; };
- 
+
 			 /**
 			  * @method jsep.addUnaryOp
 			  * @param {string} op_name The name of the unary op to add
@@ -663,7 +763,7 @@ db.system.js.save(
 				 max_unop_len = Math.max(op_name.length, max_unop_len);
 				 unary_ops[op_name] = t; return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.addBinaryOp
 			  * @param {string} op_name The name of the binary op to add
@@ -675,7 +775,7 @@ db.system.js.save(
 				 binary_ops[op_name] = precedence;
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.addLiteral
 			  * @param {string} literal_name The name of the literal to add
@@ -686,7 +786,7 @@ db.system.js.save(
 				 literals[literal_name] = literal_value;
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeUnaryOp
 			  * @param {string} op_name The name of the unary op to remove
@@ -699,7 +799,7 @@ db.system.js.save(
 				 }
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeAllUnaryOps
 			  * @return jsep
@@ -707,10 +807,10 @@ db.system.js.save(
 			 jsep.removeAllUnaryOps = function() {
 				 unary_ops = {};
 				 max_unop_len = 0;
- 
+
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeBinaryOp
 			  * @param {string} op_name The name of the binary op to remove
@@ -723,7 +823,7 @@ db.system.js.save(
 				 }
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeAllBinaryOps
 			  * @return jsep
@@ -731,10 +831,10 @@ db.system.js.save(
 			 jsep.removeAllBinaryOps = function() {
 				 binary_ops = {};
 				 max_binop_len = 0;
- 
+
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeLiteral
 			  * @param {string} literal_name The name of the literal to remove
@@ -744,518 +844,709 @@ db.system.js.save(
 				 delete literals[literal_name];
 				 return this;
 			 };
- 
+
 			 /**
 			  * @method jsep.removeAllLiterals
 			  * @return jsep
 			  */
 			 jsep.removeAllLiterals = function() {
 				 literals = {};
- 
+
 				 return this;
 			 };
- 
+
 			 return jsep;
 		 }
-		 
-		 var ret=init_jsep(ret)(txt);
+		 var e={}
+		 var engineParse=init_jsep(e)
+
+		 var ret=engineParse(txt);
+		 delete e
+		 delete engineParse
+
 		 return ret
- 
+
 	  }
 	}
  )
+ //js_parse: parse binary tree expression into mongodb expression
 db.system.js.save({
     _id:"js_parse",
     value:function(fx,params,forSelect,forNot,prefix){
          if(!forSelect) {
         forSelect=false;
     }
-    
-    if(fx.type=='Literal'){
-        
-        return fx.value;
-    }
-    var avgFuncs=";avg;sum;min;max;push;addToSet;strLenBytes;strLenCP;strLenBytes;sqrt;toString;type;last;first;literal;"
-    var ret={};
-    var op={
-        "==":"$eq",
-        "!=":"$ne",
-        ">":"$gt",
-        "<":"$lt",
-        ">=":"$gte",
-        "<=":"$lte",
-        "+":"$add",
-        "-":"$subtract",
-        "*":"$multiply",
-        "/":"$divide",
-        "%":"$mod",
-        "^":"$pow"
-    }
-    var mathOp=";$add;$subtract;$multiply;$divide;$mod;";
-    var matchOp=";$eq;$ne;$gt;$lt;$gte;$lte;";
-    var logical={
-        "&&":"$and",
-        "||":"$or"
-    }
-    if(fx.type==='UnaryExpression'){
-       if(fx.operator==="-"){ 
-            return -1*js_parse(fx.argument,params,forSelect,true)
-       }
-       if(fx.operator==="!"){
-         if(forSelect){
-           	var ret={$not:[]};
-           	ret.$not.push(js_parse(fx.argument,params,forSelect))
-           	return ret;
-         }
-         else {
-         	var ret=js_parse(fx.argument,params,forSelect,true);
-         	
-         	return ret;
-         }
-       }
-    }
-    if(fx.type==='Identifier'){
-       
-       if(prefix){
-         return prefix+fx.name;
-       }
-       else{
-         return fx.name;
-       }
-        
-    }
-    if(fx.type==='MemberExpression'){
-        var left=js_parse(fx.object,params,forSelect);
-        if(prefix){
-          if(fx.property.name){
-            	return prefix+left+"."+fx.property.name;
-          }
-          else {
-            
-            return prefix+left+"."+fx.property.raw;
-          }
-        	
+
+        if(fx.type=='Literal'){
+
+            return fx.value;
         }
-        else {
-          if(fx.property.name){
-             return left+"."+fx.property.name;
-          }
-          else {
-            return left+"."+fx.property.raw;
-          }
+        var avgFuncsWithArray=";sum;min;max;first;last;stdDevPop;stdDevPush;stdDevSamp;"
+        var avgFuncs=";push;addToSet;strLenBytes;strLenCP;strLenBytes;sqrt;toString;type;last;first;literal;"
+        var ret={};
+        var op={
+            "==":"$eq",
+            "!=":"$ne",
+            ">":"$gt",
+            "<":"$lt",
+            ">=":"$gte",
+            "<=":"$lte",
+            "+":"$add",
+            "-":"$subtract",
+            "*":"$multiply",
+            "/":"$divide",
+            "%":"$mod",
+            "^":"$pow"
         }
-    }
-    
-    if(fx.type==='BinaryExpression'){
-        ret={}
-        var right = js_parse(fx.right,params,true,false,prefix);
-        var left = js_parse(fx.left,params,true,false,prefix);
-      
-        if(fx.operator=='=='){
-        	if(typeof left==='string'){
-            	if(typeof right=="string" && (!forSelect)){
-            	    left = js_parse(fx.left,params,true,false);
-                    if(forNot){
-                        ret[left]={
-                            $ne:{
-                     	        $regex:new RegExp("^"+right+"$","i")
-                            }
-                        
-                    	};
-                    	return ret
-                    }
-                    else {
-                    	ret[left]={
-                     	   $regex:new RegExp("^"+right+"$","i")
-                        
-                    	};
-                    	return ret
-                    }
-            	}
-            	if(!forSelect){
-             	 	ret={};
-             	 	left = js_parse(fx.left,params,true,false,prefix);
-              		ret[left]=right;
-              		return  ret;
-            	}
-            	else {
-            	  left = js_parse(fx.left,params,true,false,"$");
-            	  right = js_parse(fx.right,params,true,false,"$");
-            	  return {
-            	     $eq:[left,right]
-            	  }
-            	}
-        	}
-        	else {
-        	   
-        	}
+        var mathOp=";$add;$subtract;$multiply;$divide;$mod;";
+        var matchOp=";$eq;$ne;$gt;$lt;$gte;$lte;";
+        var logical={
+            "&&":"$and",
+            "||":"$or"
         }
-        var mOp=op[fx.operator];
-        if(!forSelect && matchOp.indexOf(mOp)>-1){
-            ret={};
-            ret[left]={};
-            ret[left][mOp]=right;
-            return ret;
-            
-        }
-         right = js_parse(fx.right,params,true,false,"$");
-         left = js_parse(fx.left,params,true,false,"$");
-        ret={};
-        ret[mOp]=[left,right];
-            return ret;
-        
-        
-    }
-    if(fx.type==='LogicalExpression'){
-        var ret={}
-        ret[logical[fx.operator]]=[js_parse(fx.left,params,true),js_parse(fx.right,params,true,forNot)]
-        return ret
-    }
-    if(fx.type==='BinaryExpression'){
-        
-    }
-    if(fx.type==='CallExpression'){
-        if(fx.callee.name==="exists"){
-           ret={};
-           var left=js_parse(fx.arguments[0],params,true,forNot);
-          
-            ret[left]={
-                $exists:(forNot?false:true)
-            }
-            return ret;
-        }
-        if(avgFuncs.indexOf(";"+fx.callee.name+";")>-1){
-            ret={};
-            ret["$"+fx.callee.name]=js_parse(fx.arguments[0],params,true,false,"$");
-            return ret;
-        }
-        if(fx.callee.name=="getParams"){
-           
-          return params[fx.arguments[0].value];
-        }
-        if(fx.callee.name==='expr'){
-            ret={
-                $expr:js_parse(fx.arguments[0],params,true,forNot,"$")
-            };
-            return ret
-        }
-        if(fx.callee.name==="regex"){
-            var left=js_parse(fx.arguments[0],params,true,forNot);
-            var right=js_parse(fx.arguments[1],params,true,forNot);
-            ret={}
-            var p={};
-           // ret=p;
-            var items=left.split('.');
-            for(var i=0;i<items.length-1;i++){
-              p[items[i]]={};
-              p=p[items[i]];
-            }
-           
-            if(fx.arguments.length==2){
-                if(forNot){
-                    ret[left]={
-                        $ne:{
-                            $regex: new RegExp(right)
-                        }
-                    };        
-                }
-                else {
-                    ret[left]={
-                        $regex: new RegExp(right)
-                    };        
-                }
-                
-            }
-            else if(fx.arguments.length==3) {
-                ret[left]={
-                    $regex: new RegExp(right,js_parse(fx.arguments[2],params,true,forNot))
-                }; 
-            }
-            
-            return ret;
-        }
-        if(fx.callee.name==="iif"){
-            return {
-                $cond: {
-                   "if": js_parse(fx.arguments[0],params,true,forNot,"$"),
-                   "then": js_parse(fx.arguments[1],params,true,forNot,"$"),
-                   "else": js_parse(fx.arguments[2],params,true,forNot,"$")
-                }
-            }
-        }
-        if(fx.callee.name=="switch"){
-           
-            ret={
-                $switch:{
-                    branches:[],
-                    default:js_parse(fx.arguments[fx.arguments.length-1],params,true,forNot,"$")
-                }
-            };
-            for(var i=0;i<fx.arguments.length-1;i++){
-                ret.$switch.branches.push(js_parse(fx.arguments[i],params,true,forNot,"$"));
-            }
-            return ret;
-        }
-        if(fx.callee.name=="case"){
-            if(fx.arguments.length<2){
-                throw(new Error("case must have 2 params"))
-            }
-            return {
-                case:js_parse(fx.arguments[0],params,true,false,"$"),
-                then:js_parse(fx.arguments[1],params,true,false,"$")
-            }
-        }
-        if(fx.callee.name=="in" && (!forSelect)){
-          	var ret={};
-          	
-          	var field=js_parse(fx.arguments[0],params,true,forNot);
-          	if(typeof field!="string"){
-          	  throw(new Error("match or where with $in must be begin with field name, not object" ))
-          	}
-          	ret[field]={};
-          	ret[field]["$in"]=js_parse(fx.arguments[1],params,true,forNot,"$");
-          	
-            return ret;
-        }
-        if(fx.callee.name==="dateToString"){
-          	/*
-          		{ 	$dateToString: {
-				    date: <dateExpression>,
-    				format: <formatString>,
-    				timezone: <tzExpression>,
-    				onNull: <expression>
-				} }
-          	*/
-          	var paramIndexs=['date','format','timezone'];
-          	var ret={
-          	  	$dateToString:{}
-          	};
-          	for(var i=0;i<fx.arguments.length;i++){
-          	   ret.$dateToString[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	}
-          	return ret;
-        }
-        if(fx.callee.name==="dateFromString"){
-        	/*
-        		{ $dateFromString: {
-	   			  dateString: <dateStringExpression>,
-				     format: <formatStringExpression>,
-			     timezone: <tzExpression>,
-			     onError: <onErrorExpression>,
-			     onNull: <onNullExpression>
-				} }
- 	       */
- 	       var paramIndexs=['dateString','format','timezone','onNull','onError'];
- 	       var ret={
-          	  	$dateFromString:{}
-          	};
-          	for(var i=0;i<fx.arguments.length;i++){
-          	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	    if(val!=null){
-          	        ret.$dateFromString[paramIndexs[i]]=val;     
-          	    }
-          	   
-          	}
-          	return ret;
-        }
-        if(fx.callee.name==="dateToParts"){
-          	/*
-          		{
-				    $dateToParts: {
-				        'date' : <dateExpression>,
-				        'timezone' : <timezone>,
-				        'iso8601' : <boolean>
-				    }
-				}
-          	*/
-          	var paramIndexs=['date','timezone','iso8601'];
-          	var ret={
-          	  	$dateToParts:{}
-          	};
-          	
-          	for(var i=0;i<fx.arguments.length;i++){
-          	    
-          	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
-          
-          	    if(val!=null){
-          	        ret.$dateToParts[paramIndexs[i]]=val;     
-          	    }
-          	   
-          	}
-          	return ret;
-        }
-        if(fx.callee.name=="hour"||
-            fx.callee.name=="minute"||
-            fx.callee.name=="dayOfMonth"||
-            fx.callee.name=="dayOfYear"||
-            fx.callee.name=="second"){
-            var paramIndexs=["date", "timezone"]
-            var ret={};
-            ret["$"+fx.callee.name]={}
-          	for(var i=0;i<fx.arguments.length;i++){
-          	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	}
-          	return ret;
-        }
-        if(fx.callee.name=="dateFromParts"){
-            var paramIndexs=["year","month","day","hour","minute","second","millisecond","timezone"];
-            var ret={$dateFromParts:{}};
-            for(var i=0;i<fx.arguments.length;i++){
-                var val=js_parse(fx.arguments[i],params,true,forNot,"$");
-                if(val!=null){
-                    ret.$dateFromParts[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$"); 
-                }
-          	   
-          	}
-          	return ret;
-        }
-        if(fx.callee.name=="rtrim"||
-            fx.callee.name=="ltrim"){
-            var paramIndexs=["input", "chars"]
-            var ret={};
-            ret["$"+fx.callee.name]={}
-          	for(var i=0;i<fx.arguments.length;i++){
-          	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	}
-          	return ret;    
-        }
-        if(fx.callee.name==="ceil"){
-          return {
-            	$ceil:js_parse(fx.arguments[0],params,true,forNot,"$")
-          }
-        }
-        if(fx.callee.name==="arrayToObject"||
-           fx.callee.name=="reverseArray"    ){
-               var ret={};
-               ret["$"+fx.callee.name]=js_parse(fx.arguments[0],params,true,forNot,"$");
-               return ret;
-        }
-        if(fx.callee.name=="reduce"){
-            /*
-                    {
-                       $reduce: {
-                          input: [ [ 3, 4 ], [ 5, 6 ] ],
-                          initialValue: [ 1, 2 ],
-                          in: { $concatArrays : ["$$value", "$$this"] }
-                       }
-                    }
-            */
-            var paramIndexs=["input", "initialValue","in"]
-            var ret={};
-            ret["$"+fx.callee.name]={}
-          	for(var i=0;i<fx.arguments.length;i++){
-          	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	}
-          	return ret;
-        }
-        if(fx.callee.name==="convert"){
-          	/*
-          		{
-				   $convert:
-				      {
-				         input: <expression>,
-					     to: <type expression>,
-				         onError: <expression>,  // Optional.
-				         onNull: <expression>    // Optional.
- 				     }
-				}
-          	*/
-          	var paramIndexs=['input','to','onNull','onError'];
-          	var ret={
-          	  	$convert:{}
-          	};
-          	for(var i=0;i<fx.arguments.length;i++){
-          	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
-          	    if(val!=null){
-          	        ret.$convert[paramIndexs[i]]=val;     
-          	    }
-          	   
-          	}
-          	return ret;
-        }
-        if(fx.callee.name==="filter"){
-           //{ $filter: { input: <array>, as: <string>, cond: <expression> } }
-           var paramIndexs=['input','as','cond'];
-           var prefix=["$",undefined,"$"];
-           var ret= {
-             	$filter:{}
+        if(fx.type==='UnaryExpression'){
+           if(fx.operator==="-"){
+                return -1*js_parse(fx.argument,params,forSelect,true)
            }
-           for(var i=0;i<fx.arguments.length;i++){
-          	   ret.$filter[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,prefix[i]);
-          	}
-          	return ret;
-        }
-        if(fx.callee.name==="type"){
-          if(fx.arguments.length==2){
-           var field=js_parse(fx.arguments[0],params,true,forNot,"$");
-           var val=js_parse(fx.arguments[1],params,true,forNot,"$");
-           var ret={};
-           
-           if(forNot){
-             	ret[field]={
-             	  $not:{
-             			$type: val
-             		}
-           		};
-           		return ret;
+           if(fx.operator==="!"){
+             if(forSelect){
+               	var ret={$not:[]};
+               	ret.$not.push(js_parse(fx.argument,params,forSelect))
+               	return ret;
+             }
+             else {
+             	var ret=js_parse(fx.argument,params,forSelect,true);
+
+             	return ret;
+             }
            }
-           ret[field]={
-             	$type:val
-           };
-           return ret;
-          }
-          else {
-            	return {
-            	  	$type:js_parse(fx.arguments[0],params,true,forNot,"$")
-            	}
-          }
         }
-        else if(fx.callee.name==="size"){
-          	return {
-            	  	$size:js_parse(fx.arguments[0],params,true,forNot,"$")
-            	}
+        if(fx.type==='Identifier'){
+
+           if(prefix){
+             return prefix+fx.name;
+           }
+           else{
+             return fx.name;
+           }
+
         }
-        else if(fx.callee.name=='mergeObjects'){
-            if(fx.arguments.length===1){
-                return {
-                    $mergeObjects:js_parse(fx.arguments[0],params,true,forNot,"$")
-                }
+        if(fx.type==='MemberExpression'){
+            var left=js_parse(fx.object,params,forSelect);
+            if(prefix){
+              if(fx.property.name){
+                	return prefix+left+"."+fx.property.name;
+              }
+              else {
+
+                return prefix+left+"."+fx.property.raw;
+              }
+
             }
             else {
-                var ret={
-                    $mergeObjects:[]
-                }
-                for(var i=0;i<fx.arguments.length;i++){
-                    ret.$mergeObjects.push(js_parse(fx.arguments[i],params,true,forNot,"$"))
+              if(fx.property.name){
+                 return left+"."+fx.property.name;
+              }
+              else {
+                return left+"."+fx.property.raw;
+              }
+            }
+        }
+
+        if(fx.type==='BinaryExpression'){
+            ret={}
+            var right = js_parse(fx.right,params,true,false,prefix);
+            var left = js_parse(fx.left,params,true,false,prefix);
+
+            if(fx.operator=='=='){
+            	if(typeof left==='string'){
+                	if(typeof right=="string" && (!forSelect)){
+                	    left = js_parse(fx.left,params,true,false);
+                        if(forNot){
+                            ret[left]={
+                                $ne:{
+                         	        $regex:new RegExp("^"+right+"$","i")
+                                }
+
+                        	};
+                        	return ret
+                        }
+                        else {
+                        	ret[left]={
+                         	   $regex:new RegExp("^"+right+"$","i")
+
+                        	};
+                        	return ret
+                        }
+                	}
+                	if(!forSelect){
+                 	 	ret={};
+                 	 	left = js_parse(fx.left,params,true,false,prefix);
+                  		ret[left]=right;
+                  		return  ret;
+                	}
+                	else {
+                	  left = js_parse(fx.left,params,true,false,"$");
+                	  right = js_parse(fx.right,params,true,false,"$");
+                	  return {
+                	     $eq:[left,right]
+                	  }
+                	}
+            	}
+            	else {
+
+            	}
+            }
+            var mOp=op[fx.operator];
+            if(!forSelect && matchOp.indexOf(mOp)>-1){
+                ret={};
+                ret[left]={};
+                ret[left][mOp]=right;
+                return ret;
+
+            }
+             right = js_parse(fx.right,params,true,false,"$");
+             left = js_parse(fx.left,params,true,false,"$");
+            ret={};
+            ret[mOp]=[left,right];
+                return ret;
+
+
+        }
+        if(fx.type==='LogicalExpression'){
+            var ret={}
+            ret[logical[fx.operator]]=[js_parse(fx.left,params,true),js_parse(fx.right,params,true,forNot)]
+            return ret
+        }
+        if(fx.type==='BinaryExpression'){
+
+        }
+        if(fx.type==='CallExpression'){
+            if(fx.callee.name==="exists"){
+               ret={};
+               var left=js_parse(fx.arguments[0],params,true,forNot);
+
+                ret[left]={
+                    $exists:(forNot?false:true)
                 }
                 return ret;
             }
-        }
-        else {
-            ret={};
-            var args=[];
-            for(var i=0;i<fx.arguments.length;i++){
-                args.push(js_parse(fx.arguments[i],params,true,forNot,"$"))
+            if(avgFuncs.indexOf(";"+fx.callee.name+";")>-1){
+                ret={};
+                ret["$"+fx.callee.name]=js_parse(fx.arguments[0],params,true,false,"$");
+                return ret;
             }
-            ret["$"+fx.callee.name]=args;
-            return ret;
+            if(fx.callee.name=="getParams"){
+
+              return params[fx.arguments[0].value];
+            }
+            if(fx.callee.name==='expr'){
+                ret={
+                    $expr:js_parse(fx.arguments[0],params,true,forNot,"$")
+                };
+                return ret
+            }
+            if(fx.callee.name==="regex"){
+                var left=js_parse(fx.arguments[0],params,true,forNot);
+                var right=js_parse(fx.arguments[1],params,true,forNot);
+                ret={}
+                var p={};
+               // ret=p;
+                var items=left.split('.');
+                for(var i=0;i<items.length-1;i++){
+                  p[items[i]]={};
+                  p=p[items[i]];
+                }
+
+                if(fx.arguments.length==2){
+                    if(forNot){
+                        ret[left]={
+                            $ne:{
+                                $regex: new RegExp(right)
+                            }
+                        };
+                    }
+                    else {
+                        ret[left]={
+                            $regex: new RegExp(right)
+                        };
+                    }
+
+                }
+                else if(fx.arguments.length==3) {
+                    ret[left]={
+                        $regex: new RegExp(right,js_parse(fx.arguments[2],params,true,forNot))
+                    };
+                }
+
+                return ret;
+            }
+            if(fx.callee.name==="iif"){
+                return {
+                    $cond: {
+                       "if": js_parse(fx.arguments[0],params,true,forNot,"$"),
+                       "then": js_parse(fx.arguments[1],params,true,forNot,"$"),
+                       "else": js_parse(fx.arguments[2],params,true,forNot,"$")
+                    }
+                }
+            }
+            if(fx.callee.name=="switch"){
+
+                ret={
+                    $switch:{
+                        branches:[],
+                        default:js_parse(fx.arguments[fx.arguments.length-1],params,true,forNot,"$")
+                    }
+                };
+                for(var i=0;i<fx.arguments.length-1;i++){
+                    ret.$switch.branches.push(js_parse(fx.arguments[i],params,true,forNot,"$"));
+                }
+                return ret;
+            }
+            if(fx.callee.name=="case"){
+                if(fx.arguments.length<2){
+                    throw(new Error("case must have 2 params"))
+                }
+                return {
+                    case:js_parse(fx.arguments[0],params,true,false,"$"),
+                    then:js_parse(fx.arguments[1],params,true,false,"$")
+                }
+            }
+            if(fx.callee.name=="in" && (!forSelect)){
+              	var ret={};
+
+              	var field=js_parse(fx.arguments[0],params,true,forNot);
+              	if(typeof field!="string"){
+              	  throw(new Error("match or where with $in must be begin with field name, not object" ))
+              	}
+              	ret[field]={};
+              	ret[field]["$in"]=js_parse(fx.arguments[1],params,true,forNot,"$");
+
+                return ret;
+            }
+            if(fx.callee.name==="dateToString"){
+              	/*
+              		{ 	$dateToString: {
+    				    date: <dateExpression>,
+        				format: <formatString>,
+        				timezone: <tzExpression>,
+        				onNull: <expression>
+    				} }
+              	*/
+              	var paramIndexs=['date','format','timezone'];
+              	var ret={
+              	  	$dateToString:{}
+              	};
+              	for(var i=0;i<fx.arguments.length;i++){
+              	   ret.$dateToString[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="dateFromString"){
+            	/*
+            		{ $dateFromString: {
+    	   			  dateString: <dateStringExpression>,
+    				     format: <formatStringExpression>,
+    			     timezone: <tzExpression>,
+    			     onError: <onErrorExpression>,
+    			     onNull: <onNullExpression>
+    				} }
+     	       */
+     	       var paramIndexs=['dateString','format','timezone','onNull','onError'];
+     	       var ret={
+              	  	$dateFromString:{}
+              	};
+              	for(var i=0;i<fx.arguments.length;i++){
+              	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	    if(val!=null){
+              	        ret.$dateFromString[paramIndexs[i]]=val;
+              	    }
+
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="dateToParts"){
+              	/*
+              		{
+    				    $dateToParts: {
+    				        'date' : <dateExpression>,
+    				        'timezone' : <timezone>,
+    				        'iso8601' : <boolean>
+    				    }
+    				}
+              	*/
+              	var paramIndexs=['date','timezone','iso8601'];
+              	var ret={
+              	  	$dateToParts:{}
+              	};
+
+              	for(var i=0;i<fx.arguments.length;i++){
+
+              	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
+
+              	    if(val!=null){
+              	        ret.$dateToParts[paramIndexs[i]]=val;
+              	    }
+
+              	}
+              	return ret;
+            }
+            if(fx.callee.name=="hour"||
+                fx.callee.name=="minute"||
+                fx.callee.name=="dayOfMonth"||
+                fx.callee.name=="dayOfYear"||
+                fx.callee.name=="second"){
+                var paramIndexs=["date", "timezone"]
+                var ret={};
+                ret["$"+fx.callee.name]={}
+              	for(var i=0;i<fx.arguments.length;i++){
+              	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	}
+              	return ret;
+            }
+            if(fx.callee.name=="dateFromParts"){
+                var paramIndexs=["year","month","day","hour","minute","second","millisecond","timezone"];
+                var ret={$dateFromParts:{}};
+                for(var i=0;i<fx.arguments.length;i++){
+                    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
+                    if(val!=null){
+                        ret.$dateFromParts[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+                    }
+
+              	}
+              	return ret;
+            }
+            if(fx.callee.name=="rtrim"||
+                fx.callee.name=="ltrim"){
+                var paramIndexs=["input", "chars"]
+                var ret={};
+                ret["$"+fx.callee.name]={}
+              	for(var i=0;i<fx.arguments.length;i++){
+              	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="ceil"){
+              return {
+                	$ceil:js_parse(fx.arguments[0],params,true,forNot,"$")
+              }
+            }
+            if(fx.callee.name==="arrayToObject"||
+               fx.callee.name=="reverseArray"    ){
+                   var ret={};
+                   ret["$"+fx.callee.name]=js_parse(fx.arguments[0],params,true,forNot,"$");
+                   return ret;
+            }
+            if(fx.callee.name=="reduce"){
+                /*
+                        {
+                           $reduce: {
+                              input: [ [ 3, 4 ], [ 5, 6 ] ],
+                              initialValue: [ 1, 2 ],
+                              in: { $concatArrays : ["$$value", "$$this"] }
+                           }
+                        }
+                */
+                var paramIndexs=["input", "initialValue","in"]
+                var ret={};
+                ret["$"+fx.callee.name]={}
+              	for(var i=0;i<fx.arguments.length;i++){
+              	   ret["$"+fx.callee.name][paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="convert"){
+              	/*
+              		{
+    				   $convert:
+    				      {
+    				         input: <expression>,
+    					     to: <type expression>,
+    				         onError: <expression>,  // Optional.
+    				         onNull: <expression>    // Optional.
+     				     }
+    				}
+              	*/
+              	var paramIndexs=['input','to','onNull','onError'];
+              	var ret={
+              	  	$convert:{}
+              	};
+              	for(var i=0;i<fx.arguments.length;i++){
+              	    var val=js_parse(fx.arguments[i],params,true,forNot,"$");
+              	    if(val!=null){
+              	        ret.$convert[paramIndexs[i]]=val;
+              	    }
+
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="filter"){
+               //{ $filter: { input: <array>, as: <string>, cond: <expression> } }
+               var paramIndexs=['input','as','cond'];
+               var prefix=["$",undefined,"$"];
+               var ret= {
+                 	$filter:{}
+               }
+               for(var i=0;i<fx.arguments.length;i++){
+              	   ret.$filter[paramIndexs[i]]=js_parse(fx.arguments[i],params,true,forNot,prefix[i]);
+              	}
+              	return ret;
+            }
+            if(fx.callee.name==="type"){
+              if(fx.arguments.length==2){
+               var field=js_parse(fx.arguments[0],params,true,forNot,"$");
+               var val=js_parse(fx.arguments[1],params,true,forNot,"$");
+               var ret={};
+
+               if(forNot){
+                 	ret[field]={
+                 	  $not:{
+                 			$type: val
+                 		}
+               		};
+               		return ret;
+               }
+               ret[field]={
+                 	$type:val
+               };
+               return ret;
+              }
+              else {
+                	return {
+                	  	$type:js_parse(fx.arguments[0],params,true,forNot,"$")
+                	}
+              }
+            }
+            else if(fx.callee.name==="size"){
+              	return {
+                	  	$size:js_parse(fx.arguments[0],params,true,forNot,"$")
+                	}
+            }
+            else if(fx.callee.name=='mergeObjects'){
+                if(fx.arguments.length===1){
+                    return {
+                        $mergeObjects:js_parse(fx.arguments[0],params,true,forNot,"$")
+                    }
+                }
+                else {
+                    var ret={
+                        $mergeObjects:[]
+                    }
+                    for(var i=0;i<fx.arguments.length;i++){
+                        ret.$mergeObjects.push(js_parse(fx.arguments[i],params,true,forNot,"$"))
+                    }
+                    return ret;
+                }
+            }
+            else if(avgFuncsWithArray.indexOf(";"+fx.callee.name+";")>-1){
+                if (fx.arguments.length==1){
+                    ret={};
+                    ret["$"+fx.callee.name]=js_parse(fx.arguments[0],params,true,false,"$");
+                    return ret;
+                }
+            }
+            else {
+                ret={};
+                var args=[];
+                for(var i=0;i<fx.arguments.length;i++){
+                    args.push(js_parse(fx.arguments[i],params,true,forNot,"$"))
+                }
+                ret["$"+fx.callee.name]=args;
+                return ret;
+            }
+        }
+        if(fx.type=='ArrayExpression'){
+            ret =[]
+            for(var i=0;i<fx.elements.length;i++){
+                ret.push(js_parse(fx.elements[i],params,true,forNot))
+            }
+            return ret
         }
     }
-    }
-}) 
+})
 db.system.js.save(
 	{
 		_id:"expr",
 		value:function(x,p){
-		   
+
 		    var expr=x;
 
 		    var params =p;
-		   
+
 			return js_parse(jsep(expr,params),params);
 		}
 	}
 );
+
+db.system.js.save({
+    _id:"$filter",
+    value:function(){
+        if(arguments.length<3){
+            throw("$filter require 3 params")
+        }
+        var input =arguments[0]
+        var alias= arguments[1]
+        var cond =arguments[2]
+        var params =[]
+        for(var i=3;i<arguments.length;i++){
+            params.push(arguments[i])
+        }
+        var ret= {
+                $filter: {
+               input:query().parse(input,params),
+               as: alias,
+               cond: query().parse(cond,params)
+            }}
+        return ret
+    }
+})
+db.system.js.save({
+    _id:"$push",
+    value:function(){
+        function fix(retData){
+            if(isObject(retData)){
+                var ret ={}
+                var keys=Object.keys(retData);
+
+                for(var i=0;i<keys.length;i++){
+                    var key=keys[i]
+                    var val = retData[key]
+                    if(isString(val)){
+                        if(val.length>0 && val[0]=='$'){
+                            ret[key]=val.substring(1,val.length)
+
+                        }
+                        else {
+                            ret[key]=val
+                        }
+
+                    }
+                    else {
+                        ret[key]=val
+                    }
+
+                }
+                return ret
+            }
+
+            else {
+                return retData
+            }
+
+        }
+        var data =arguments[0]
+
+        var params =[]
+        for(var i=1;i<arguments.length;i++){
+            params.push(arguments[i])
+        }
+        var ret= {
+                $push: query().parse(data,params,false,false)
+                }
+        return fix(ret)
+    }
+})
+db.system.js.save({
+    _id:"$addToSet",
+    value:function(){
+        var data =arguments[0]
+
+        var params =[]
+        for(var i=1;i<arguments.length;i++){
+            params.push(arguments[i])
+        }
+        function fix(retData){
+            if(isObject(retData)){
+                var ret ={}
+                var keys=Object.keys(retData);
+
+                for(var i=0;i<keys.length;i++){
+                    var key=keys[i]
+                    var val = retData[key]
+                    if(isString(val)){
+                        if(val.length>0 && val[0]=='$'){
+                            ret[key]=val.substring(1,val.length)
+
+                        }
+                        else {
+                            ret[key]=val
+                        }
+
+                    }
+                    else {
+                        ret[key]=val
+                    }
+
+                }
+                return ret
+            }
+
+            else {
+                return retData
+            }
+
+        }
+        var ret= {
+                $addToSet: query().parse(data,params,false,false)
+                }
+        return fix(ret)
+    }
+})
+db.system.js.save({
+    _id:"$map",
+    value:function(){
+        if(arguments.length<3){
+            throw("$map require 3 params")
+        }
+        var input =arguments[0]
+        var alias= arguments[1]
+        var cond =arguments[2]
+        var params =[]
+
+        for(var i=1;i<arguments.length;i++){
+            params.push(arguments[i])
+        }
+               var ret=
+                {$map:
+                 {
+                   input: query().parse(input,params),
+                   as: alias,
+                   "in":query().parse(cond,params)
+                 }}
+        return ret
+    }
+})
+db.system.js.save({
+    _id:"$let",
+    value:function(){
+    /*
+        $let: {
+               vars: {
+                  total: { $add: [ '$price', '$tax' ] },
+                  discounted: { $cond: { if: '$applyDiscount', then: 0.9, else: 1 } }
+               },
+               in: { $multiply: [ "$$total", "$$discounted" ] }
+            }
+    */
+        if(arguments.length<2){
+            throw("$let require 2 params")
+        }
+        var vars =arguments[0]
+        var cond =arguments[1]
+        var params =[]
+
+        for(var i=2;i<arguments.length;i++){
+            params.push(arguments[i])
+        }
+               var ret=
+                {$let:
+                 {
+                   vars: query().parse(vars,params),
+                   "in":query().parse(cond,params)
+                 }}
+        return ret
+    }
+})
 
 db.system.js.save({
     _id:"query",
@@ -1266,48 +1557,49 @@ db.system.js.save({
                     this.name=name;
                   }
                   else if(name._shortName) {
-                   
+
                      this.coll=name;
                   }
             }
-            
+
             this.pipeline=[];
-            
+
         }
+
         qr.prototype.parse=function(obj,params,forMatch,isSecond){
            if(obj== undefined) {
                return undefined
-           }    
+           }
           if(!forMatch){
              forMatch=false;
           }
             if(typeof obj ==="string"){
-                
+
               if(forMatch){
-                    return js_parse(jsep(obj,params),params,!forMatch,false,"$");    
+                    return js_parse(jsep(obj,params),params,!forMatch,false,"$");
               }
               else {
-                  return js_parse(jsep(obj,params),params,!forMatch,false,"$");    
+                  return js_parse(jsep(obj,params),params,!forMatch,false,"$");
               }
-              
+
             }
             var txt=JSON.stringify(obj);
-            
+
             if(txt[0]==="{" && txt[txt.length-1]==="}"){
                 var ret={};
                 var keys= Object.keys(obj);
                 for(var i=0;i<keys.length;i++){
                     var key=keys[i];
                     var val= obj[key];
-            
+
                     var r=this.parse(val,params,forMatch);
                     if(typeof r==="string"){
                       ret[key]=this.parse(val,params,forMatch,true,"$")
                     }
                     else {
-                      ret[key]=this.parse(val,params,forMatch,true,"$")	
+                      ret[key]=this.parse(val,params,forMatch,true,"$")
                     }
-                    
+
                 }
                 return ret;
             }
@@ -1319,23 +1611,23 @@ db.system.js.save({
             }
             return this;
         }
-       
+
         qr.prototype.project=function(){
             var selectors=arguments[0];
-            
+
             var params =[];
 		    for(var i=1;i<arguments.length;i++){
 		        params.push(arguments[i])
 		    }
-		   
+
 		    var data=this.parse(selectors,params);
-		    
+
 		    this.pipeline.push({
 		        $project:data
 		    })
             //js_parse(jsep(expr,params),params);
             return this;
-        }  
+        }
         qr.prototype.addFields=function(){
             var selectors=arguments[0];
             var params =[];
@@ -1348,7 +1640,7 @@ db.system.js.save({
 		    })
             //js_parse(jsep(expr,params),params);
             return this;
-        }  
+        }
         qr.prototype.items=function(options){
             var op={
                 allowDiskUse:true
@@ -1360,15 +1652,20 @@ db.system.js.save({
                 }
             }
             if(this.coll){
-               
-              	return this.coll.aggregate(this.pipeline,op);
+
+              	var ret= this.coll.aggregate(this.pipeline,op);
+              	delete this
+    	  	    return ret
             }
             else {
-            	return db.getCollection(this.name).aggregate(this.pipeline,op);
+            	var ret= db.getCollection(this.name).aggregate(this.pipeline,op);
+            	delete this
+    	  	    return ret
             }
         }
         qr.prototype.item=function(){
             var ret=this.limit(1).items().toArray();
+            delete this
             if(ret.length>0){
                 return ret[0];
             }
@@ -1382,12 +1679,12 @@ db.system.js.save({
 		    for(var i=1;i<arguments.length;i++){
 		        params.push(arguments[i])
 		    }
-		    
+
 		    this.pipeline.push({
 		        $match: js_parse(jsep(_expr,params),params,false)
 		    });
 		    return this;
-		 
+
         }
         qr.prototype.limit=function(num){
             this.pipeline.push({
@@ -1411,7 +1708,7 @@ db.system.js.save({
             return this;
         }
         qr.prototype.sort=function(){
-            
+
             this.pipeline.push({
                 $sort:arguments[0]
             });
@@ -1451,7 +1748,7 @@ db.system.js.save({
             return this;
         }
         qr.prototype.unwind=function(){
-    
+
             if(arguments.length==1){
                 this.pipeline.push({
                     $unwind:"$"+arguments[0]
@@ -1468,7 +1765,7 @@ db.system.js.save({
                     });
                     return this;
                 }
-                
+
                 if(typeof arguments[1]==="boolean"){
                     this.pipeline.push({
                         $unwind:{
@@ -1515,7 +1812,7 @@ db.system.js.save({
                 return this;
             }
             else{
-                
+
                 var data=this.parse(_obj,params);
     		    this.pipeline.push({
                     $replaceRoot: { newRoot: data }
@@ -1556,7 +1853,7 @@ db.system.js.save({
                     boundaries:data.boundaries,
                     default:_default,
                     output:output
-                    
+
                 }
             })
             return this;
@@ -1601,7 +1898,7 @@ db.system.js.save({
                     throw(new Error("'"+key+"' is not 'query'"))
                 }
                 _facet[key]=val.pipeline;
-                
+
             }
             this.pipeline.push({
                 $facet:_facet
@@ -1662,18 +1959,18 @@ db.system.js.save({
              	}
            }
            else if(param1.from &&
-           		  
+
            		   param1.pipeline &&
            		   param1.as	){
            		    var params =[];
 				    for(var i=1;i<arguments.length;i++){
 				        params.push(arguments[i])
-				    }  
+				    }
 				    var x={}
 				    x.from=param1.from;
 				    if(param1.from._shortName){
 				      x.from=param1.from._shortName;
-				      
+
 				    }
 				    if(param1.let){
 				        x.let=this.parse(param1.let,params);
@@ -1685,9 +1982,9 @@ db.system.js.save({
 		          	});
 		          	return this;
            }
-           
+
         }
-        
+
         qr.prototype.join=function(from,localField,foreignField,as){
           this.lookup(from,localField,foreignField,as);
           this.unwind(as);
@@ -1712,7 +2009,10 @@ db.system.js.save({
 		        params.push(arguments[i])
 		    }
 		    var data=this.parse(selectors,params);
-		    
+		    if (!data._id){
+		        data._id = null;
+		    }
+
 		    this.pipeline.push({
 		        $group:data
 		    });
@@ -1725,27 +2025,27 @@ db.system.js.save({
           	var op={
                 allowDiskUse:true
             }
-            
+
             if(this.coll){
-               
+
               	 return this.coll.aggregate(this.pipeline,op);
             }
             else {
-               
+
             	return db.getCollection(this.name).aggregate(this.pipeline,op);
             }
-          
+
         }
         qr.prototype.redact=function(){
             var selectors=arguments[0];
-            
+
             var params =[];
 		    for(var i=1;i<arguments.length;i++){
 		        params.push(arguments[i])
 		    }
-		   
+
 		    var data=this.parse(selectors,params);
-		    
+
 		    this.pipeline.push({
 		        $redact:data
 		    })
@@ -1753,7 +2053,7 @@ db.system.js.save({
             return this;
         }
         qr.prototype.createView=function(name,options){
-           
+
           	var ret=db.createView(name, this.name, this.pipeline, options);
           	return ret;
         }
@@ -1764,8 +2064,8 @@ db.system.js.save({
 		    else {
 		      return db.getCollectionInfos({name:this.name});
 		    }
-	       
-	       
+
+
 	    }
         qr.prototype.find=function(){
           if(arguments.length==0){
@@ -1783,14 +2083,14 @@ db.system.js.save({
 		    }
 		    var _expr= js_parse(jsep(selectors,params),params);
 		    if(this.coll){
-		      	return this.coll.find({});
+		      	return this.coll.find(_expr);
 		    }
 		    else {
-		      return db.getCollection(this.name).find({});
+		      return db.getCollection(this.name).find(_expr);
 		    }
         }
         qr.prototype.findOne=function(){
-         
+
           	if(arguments.length==0){
           	  	if(this.coll){
 		      	    return this.coll.findOne({});
@@ -1806,10 +2106,10 @@ db.system.js.save({
 		    }
 		    var _expr= js_parse(jsep(selectors,params),params);
 		    if(this.coll){
-		      	return this.coll.findOne({});
+		      	return this.coll.findOne(_expr);
 		    }
 		    else {
-		    	return db.getCollection(this.name).findOne({});
+		    	return db.getCollection(this.name).findOne(_expr);
 		    }
         }
         qr.prototype.toFile=function(filePath){
@@ -1875,7 +2175,7 @@ db.system.js.save({
 	      	  ret._updateData.$pull={};
 	      	}
 		    if(typeof selectors == "string"){
-	
+
 		      	var _expr=js_parse(jsep(selectors,params),params);
 		      	var keys=Object.keys(_expr);
 	      		ret._updateData.$pull[keys[0]]=_expr[keys[0]];
@@ -1903,9 +2203,9 @@ db.system.js.save({
 	      	if(!ret._updateData.$pullAll){
 	      	   ret._updateData.$pullAll={};
 	      	}
-	      	
+
 		    if(typeof selectors == "string"){
-	
+
 		      	var _expr=js_parse(jsep(selectors,params),params);
 		      	var keys=Object.keys(_expr);
 	      		ret._updateData.$pullAll[keys[0]]=_expr[keys[0]];
@@ -2005,7 +2305,40 @@ db.system.js.save({
 		        params.push(arguments[i]);
 		    }
 		    var _expr= js_parse(jsep(selectors,params),params);
-          	return new entity(this,_expr);		
+          	return new entity(this,_expr);
+        }
+        qr.prototype.getPage=function(pageSize,pageIndex,sort){
+            pageSize=pageSize||100
+            pageIndex=pageIndex||0
+            var qrCount=query(this.coll||this.name)
+            qrCount.pipeline=[];
+            for(var i=0;i<this.pipeline.length;i++){
+                qrCount.pipeline.push(this.pipeline[i])
+            }
+            retCount=qrCount.count().item().ret
+            if(sort){
+                this.stage({
+                    $sort:sort
+                })
+            }
+            this.stage({
+                $skip:pageSize*pageIndex
+            })
+            this.stage({
+                $limit:pageSize
+            })
+            var totalPages =Math.floor(retCount/pageSize)
+            if(retCount % pageSize >0 ){
+                totalPages++;
+            }
+            var items=qr.items().toArray()
+            return {
+                pageSize:pageSize,
+                pageIndex:pageIndex,
+                totalPages:totalPages,
+                items:items
+                
+            }
         }
         //-----------------------------------------
         function entity(qr,_expr){
@@ -2016,24 +2349,32 @@ db.system.js.save({
       		else {
       		  this.coll=qr.coll;
       		}
-      		
-	      	
+
+
     	  	this._expr=_expr;
     	}
     	entity.prototype.items=function(){
     	  	if(this._expr){
-    	  	  	return this.coll.find(this._expr);
+    	  	  	var ret = this.coll.find(this._expr);
+    	  	  	delete this
+    	  	  	return ret
     	  	}
     	  	else {
-    	  	   return this.coll.find({});
+    	  	   var ret = this.coll.find({});
+    	  	   delete this
+    	  	    return ret
     	  	}
     	}
     	entity.prototype.item=function(){
     	  	if(this._expr){
-    	  	  	return this.coll.findOne(this._expr);
+    	  	  	var ret= this.coll.findOne(this._expr);
+    	  	  	delete this
+    	  	    return ret
     	  	}
     	  	else {
-    	  	   return this.coll.findOne({});
+    	  	   var ret= this.coll.findOne({});
+    	  	   delete this
+    	  	   return ret
     	  	}
     	}
     	entity.prototype.out=function(collectionName){
@@ -2050,7 +2391,7 @@ db.system.js.save({
     	  	}
     	  	else {
     	  	   var ret = this.coll.aggregate([
-    	  	  		
+
     	  	  		{
     	  	  		  $out:collectionName
     	  	  		}
@@ -2059,7 +2400,7 @@ db.system.js.save({
     	  	}
     	}
     	entity.prototype.count=function(){
-    	  
+
     	  	if(this._expr){
     	  	  	var ret = this.coll.aggregate([
     	  	  		{
@@ -2078,7 +2419,7 @@ db.system.js.save({
     	  	}
     	  	else {
     	  	   var ret = this.coll.aggregate([
-    	  	  		
+
     	  	  		{
     	  	  		  $count:"ret"
     	  	  		}
@@ -2093,17 +2434,33 @@ db.system.js.save({
     	}
     	entity.prototype.commit=function(){
     	  	if(this._insertItem!=null){
-    	  	   return this.coll.insertOne(this._insertItem);
+    	  	   var ret= this.coll.insertOne(this._insertItem);
+    	  	   if(ret.code && ret.code==121){
+    	  	   	 throw(ret);
+    	  	   }
+    	  	   return ret;
     	  	}
     	  	if(this._insertItems!=null){
-    	  	   return this.coll.insertMany(this._insertItems);
+    	  	   var ret= this.coll.insertMany(this._insertItems);
+    	  	   if(ret.code && ret.code==121){
+    	  	   	 throw(ret);
+    	  	   }
+    	  	   return ret;
     	  	}
     	  	if(this._updateData){
     	  	  if(this._expr){
-    	  	  	return this.coll.updateMany(this._expr,this._updateData);
+    	  	  	var ret= this.coll.updateMany(this._expr,this._updateData);
+    	  	  	if(ret.code && ret.code==121){
+    	  	   		 throw(ret);
+    	  	    }
+    	  	    return ret;
     	  	  }
     	  	  else {
-    	  	    return this.coll.updateMany({},this._updateData);
+    	  	    var ret= this.coll.updateMany({},this._updateData);
+    	  	    if(ret.code && ret.code==121){
+    	  	   		 throw(ret);
+    	  	    }
+    	  	    return ret;
     	  	  }
     	  	}
     	}
@@ -2121,11 +2478,11 @@ db.system.js.save({
     	  	else {
     	  	  	this._insertItems=[];
     	  	  	for(var i=0;i<arguments.length;i++){
-    	  	  	 	this._insertItems.push(arguments[i]); 
+    	  	  	 	this._insertItems.push(arguments[i]);
     	  	  	}
 				return this;
     	  	}
-      		
+
 	    }
 	    entity.prototype.inc=function(data){
 	      	if(!this._updateData){
@@ -2189,7 +2546,7 @@ db.system.js.save({
        	}
 	    entity.prototype.info=function(){
 	       return db.getCollectionInfos({name:this.coll._shortName})
-	       
+
 	    }
 	    entity.prototype.push=function(data){
 	      	if(!this._updateData){
@@ -2213,7 +2570,7 @@ db.system.js.save({
 	    entity.prototype.pullAll=function(){
 	      	var selectors=arguments[0];
             var params =[];
-            
+
 		    for(var i=1;i<arguments.length;i++){
 		        params.push(arguments[i])
 		    }
@@ -2224,7 +2581,7 @@ db.system.js.save({
 	      	  this._updateData.$pullAll={};
 	      	}
 		    if(typeof selectors == "string"){
-	
+
 		      	var _expr=js_parse(jsep(selectors,params),params);
 		      	var keys=Object.keys(_expr);
 	      		this._updateData.$pullAll[keys[0]]=_expr[keys[0]];
@@ -2242,7 +2599,7 @@ db.system.js.save({
 	    entity.prototype.pull=function(){
 	      	var selectors=arguments[0];
             var params =[];
-            
+
 		    for(var i=1;i<arguments.length;i++){
 		        params.push(arguments[i])
 		    }
@@ -2253,7 +2610,7 @@ db.system.js.save({
 	      	  this._updateData.$pull={};
 	      	}
 		    if(typeof selectors == "string"){
-	
+
 		      	var _expr=js_parse(jsep(selectors,params),params);
 		      	var keys=Object.keys(_expr);
 	      		this._updateData.$pull[keys[0]]=_expr[keys[0]];
@@ -2267,9 +2624,9 @@ db.system.js.save({
 		      	}
 		      	return this;
 		    }
-		    
-		    
-	      	
+
+
+
 	    }
 	    entity.prototype.addToSet=function(data){
 	      	if(!this._updateData){
@@ -2299,8 +2656,8 @@ db.system.js.save({
 	    }
         return new qr(name)
     }
-    
-   
+
+
 })
 
 db.loadServerScripts()
